@@ -1,0 +1,63 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - heading "🌱 Page de Seed — Test" [level=1] [ref=e6]
+    - paragraph [ref=e7]: Injecte des données fictives dans Firebase pour les tests. Ne jamais utiliser en production.
+  - generic [ref=e8]:
+    - paragraph [ref=e9]: Comptes de test créés
+    - table [ref=e10]:
+      - rowgroup [ref=e11]:
+        - row "Rôle Email Mot de passe" [ref=e12]:
+          - columnheader "Rôle" [ref=e13]
+          - columnheader "Email" [ref=e14]
+          - columnheader "Mot de passe" [ref=e15]
+      - rowgroup [ref=e16]:
+        - row "Patron patron@scaffold-test.fr Test1234!" [ref=e17]:
+          - cell "Patron" [ref=e18]
+          - cell "patron@scaffold-test.fr" [ref=e19]
+          - cell "Test1234!" [ref=e20]
+        - row "Chef chef@scaffold-test.fr Test1234!" [ref=e21]:
+          - cell "Chef" [ref=e22]
+          - cell "chef@scaffold-test.fr" [ref=e23]
+          - cell "Test1234!" [ref=e24]
+        - row "Ouvrier ouvrier@scaffold-test.fr Test1234!" [ref=e25]:
+          - cell "Ouvrier" [ref=e26]
+          - cell "ouvrier@scaffold-test.fr" [ref=e27]
+          - cell "Test1234!" [ref=e28]
+        - row "Comptable comptable@scaffold-test.fr Test1234!" [ref=e29]:
+          - cell "Comptable" [ref=e30]
+          - cell "comptable@scaffold-test.fr" [ref=e31]
+          - cell "Test1234!" [ref=e32]
+  - generic [ref=e33]:
+    - paragraph [ref=e34]: Données injectées
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - paragraph [ref=e37]: Clients
+        - paragraph [ref=e38]: 3 (Dupont, Martin, Renaud)
+      - generic [ref=e39]:
+        - paragraph [ref=e40]: Chantiers
+        - paragraph [ref=e41]: 3 (en cours + en attente)
+      - generic [ref=e42]:
+        - paragraph [ref=e43]: Factures
+        - paragraph [ref=e44]: 5 (FAC-2025-001 à 005)
+      - generic [ref=e45]:
+        - paragraph [ref=e46]: Ouvriers
+        - paragraph [ref=e47]: 3 fictifs + 4 comptes Auth
+      - generic [ref=e48]:
+        - paragraph [ref=e49]: Pointages
+        - paragraph [ref=e50]: 7 entrées (lun–mer S24)
+      - generic [ref=e51]:
+        - paragraph [ref=e52]: Stock
+        - paragraph [ref=e53]: 3 articles (2 alertes)
+      - generic [ref=e54]:
+        - paragraph [ref=e55]: Trésorerie
+        - paragraph [ref=e56]: 8 mouvements juin 2026
+      - generic [ref=e57]:
+        - paragraph [ref=e58]: Solde
+        - paragraph [ref=e59]: 24 310 € (38 240 enc. / 13 930 déc.)
+  - generic [ref=e60]:
+    - button "Injecter les données de test" [ref=e61] [cursor=pointer]:
+      - img [ref=e62]
+      - text: Injecter les données de test
+    - button "Reset" [ref=e64] [cursor=pointer]:
+      - img [ref=e65]
+      - text: Reset

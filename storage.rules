@@ -1,0 +1,50 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Photos chantier — lecture tous authentifiés, écriture image < 10MB
+    match /photos_chantier/{chantierId}/{file} {
+      allow read:  if request.auth != null
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*')
+      allow delete: if request.auth != null
+    }
+
+    // Documents ouvriers — ouvrier voit les siens, patron voit tout
+    match /documents/{uid}/{file} {
+      allow read, write: if request.auth.uid == uid
+                         || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'patron'
+    }
+
+    // Archives pointages — patron uniquement
+    match /archives/{uid}/{file} {
+      allow read, write: if firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'patron'
+    }
+
+    // PDFs factures
+    match /factures/{factureId}/{file} {
+      allow read:  if request.auth != null
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024
+    }
+
+    // Logo et paramètres société — patron uniquement
+    match /parametres/{file} {
+      allow read:  if request.auth != null
+      allow write: if firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'patron'
+                   && request.resource.size < 2 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*')
+    }
+
+    // Tickets de caisse — propriétaire ou patron
+    match /tickets/{uid}/{file} {
+      allow read:  if request.auth.uid == uid
+                   || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'patron'
+                   || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'chef_equipe'
+      allow write: if request.auth != null
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*')
+    }
+  }
+}

@@ -1,0 +1,163 @@
+- generic [ref=e22]:
+  - complementary [ref=e23]:
+    - generic [ref=e24]:
+      - paragraph [ref=e25]: 🏗 Scaffold-OS
+      - paragraph [ref=e26]: jakoub boughazi
+      - button "Recherche Ctrl K" [ref=e28] [cursor=pointer]:
+        - img [ref=e29]
+        - text: Recherche
+        - generic [ref=e31]: Ctrl K
+    - navigation [ref=e32]:
+      - link "Dashboard" [ref=e33] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e35]
+        - text: Dashboard
+      - link "Chantiers" [ref=e37] [cursor=pointer]:
+        - /url: /chantiers
+        - img [ref=e39]
+        - text: Chantiers
+      - link "Clients" [ref=e41] [cursor=pointer]:
+        - /url: /clients
+        - img [ref=e43]
+        - text: Clients
+      - link "Factures" [ref=e45] [cursor=pointer]:
+        - /url: /factures
+        - img [ref=e47]
+        - text: Factures
+      - link "Devis" [ref=e49] [cursor=pointer]:
+        - /url: /devis
+        - img [ref=e51]
+        - text: Devis
+      - link "Personnel" [ref=e53] [cursor=pointer]:
+        - /url: /personnel
+        - img [ref=e55]
+        - text: Personnel
+      - link "Planning" [ref=e57] [cursor=pointer]:
+        - /url: /planning
+        - img [ref=e59]
+        - text: Planning
+      - link "Équipes" [ref=e61] [cursor=pointer]:
+        - /url: /equipes
+        - img [ref=e63]
+        - text: Équipes
+      - link "Pointage" [ref=e65] [cursor=pointer]:
+        - /url: /pointage
+        - img [ref=e67]
+        - text: Pointage
+      - link "Stock" [ref=e70] [cursor=pointer]:
+        - /url: /stock
+        - img [ref=e72]
+        - text: Stock
+      - link "Tickets" [ref=e74] [cursor=pointer]:
+        - /url: /tickets
+        - img [ref=e76]
+        - text: Tickets
+      - link "Trésorerie" [ref=e78] [cursor=pointer]:
+        - /url: /tresorerie
+        - img [ref=e80]
+        - text: Trésorerie
+      - link "Comptabilité" [ref=e82] [cursor=pointer]:
+        - /url: /comptabilite
+        - img [ref=e84]
+        - text: Comptabilité
+      - link "Paramètres" [ref=e86] [cursor=pointer]:
+        - /url: /parametres
+        - img [ref=e88]
+        - text: Paramètres
+    - button "Déconnexion" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - text: Déconnexion
+  - main [ref=e94]:
+    - generic [ref=e95]:
+      - generic [ref=e96]:
+        - generic [ref=e97]:
+          - heading "Stock matériel" [level=1] [ref=e98]
+          - paragraph [ref=e99]: 1 article(s) · 0 alerte(s)
+        - button "Ajouter" [ref=e100] [cursor=pointer]:
+          - img [ref=e101]
+          - text: Ajouter
+      - generic [ref=e103]:
+        - combobox [ref=e104]:
+          - option "Toutes catégories" [selected]
+          - option "Cadres"
+          - option "Planches"
+          - option "Tubes"
+          - option "Pieds réglables"
+          - option "Filets de protection"
+          - option "Autre"
+        - combobox [ref=e105]:
+          - option "Tous états" [selected]
+          - option "Bon état"
+          - option "Usagé"
+          - option "Maintenance"
+          - option "Rebut"
+      - table [ref=e108]:
+        - rowgroup [ref=e109]:
+          - row "Article Catégorie Disponible Total Min État" [ref=e110]:
+            - columnheader "Article" [ref=e111]
+            - columnheader "Catégorie" [ref=e112]
+            - columnheader "Disponible" [ref=e113]
+            - columnheader "Total" [ref=e114]
+            - columnheader "Min" [ref=e115]
+            - columnheader "État" [ref=e116]
+            - columnheader [ref=e117]
+        - rowgroup [ref=e118]:
+          - row "Cadres aluminium 3m Cadres 50 50 10 Bon état" [ref=e7]:
+            - cell "Cadres aluminium 3m" [ref=e8]
+            - cell "Cadres" [ref=e9]
+            - cell "50" [ref=e10]
+            - cell "50" [ref=e11]
+            - cell "10" [ref=e12]
+            - cell "Bon état" [ref=e13]
+            - cell [ref=e14]:
+              - generic [ref=e15]:
+                - button "QR code" [ref=e16] [cursor=pointer]:
+                  - img [ref=e17]
+                - button "Modifier" [active] [ref=e19] [cursor=pointer]:
+                  - img [ref=e20]
+      - generic [ref=e120]:
+        - generic [ref=e121]:
+          - heading "Modifier l'article" [level=2] [ref=e122]
+          - button [ref=e123] [cursor=pointer]:
+            - img [ref=e124]
+        - generic [ref=e126]:
+          - generic [ref=e127]:
+            - generic [ref=e128]: Nom
+            - textbox [ref=e129]: Cadres aluminium 3m
+          - generic [ref=e130]:
+            - generic [ref=e131]: Catégorie
+            - combobox [ref=e132]:
+              - option "Cadres" [selected]
+              - option "Planches"
+              - option "Tubes"
+              - option "Pieds réglables"
+              - option "Filets de protection"
+              - option "Autre"
+          - generic [ref=e133]:
+            - generic [ref=e134]: État
+            - combobox [ref=e135]:
+              - option "Bon état" [selected]
+              - option "Usagé"
+              - option "Maintenance"
+              - option "Rebut"
+          - generic [ref=e136]:
+            - generic [ref=e137]: Quantité disponible
+            - generic [ref=e138]:
+              - button "−" [ref=e139] [cursor=pointer]
+              - spinbutton [ref=e140]: "50"
+              - button "+" [ref=e141] [cursor=pointer]
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - generic [ref=e144]: Quantité totale
+              - spinbutton [ref=e145]: "50"
+            - generic [ref=e146]:
+              - generic [ref=e147]: Quantité minimum
+              - spinbutton [ref=e148]: "10"
+          - generic [ref=e149]:
+            - generic [ref=e150]: Prix d'achat (€)
+            - spinbutton [ref=e151]: "45"
+          - generic [ref=e152]:
+            - button "Supprimer" [ref=e153] [cursor=pointer]:
+              - img [ref=e154]
+              - text: Supprimer
+            - button "Enregistrer" [ref=e156] [cursor=pointer]

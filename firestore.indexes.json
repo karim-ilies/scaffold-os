@@ -1,0 +1,142 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "stock",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "categorie", "order": "ASCENDING" },
+        { "fieldPath": "nom",       "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pointages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "statut", "order": "ASCENDING" },
+        { "fieldPath": "date",   "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pointages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chantierId", "order": "ASCENDING" },
+        { "fieldPath": "date",       "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pointages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ouvrierId", "order": "ASCENDING" },
+        { "fieldPath": "date",      "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pointages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ouvrierId", "order": "ASCENDING" },
+        { "fieldPath": "date",      "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "factures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "statut",       "order": "ASCENDING"  },
+        { "fieldPath": "dateEmission", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chantiers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "statut",    "order": "ASCENDING"  },
+        { "fieldPath": "dateDebut", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chantiers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chefEquipeId", "order": "ASCENDING"  },
+        { "fieldPath": "dateDebut",    "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "role", "order": "ASCENDING" },
+        { "fieldPath": "nom",  "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "actif", "order": "ASCENDING" },
+        { "fieldPath": "nom",   "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "fiches_mensuelles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ouvrierId", "order": "ASCENDING"  },
+        { "fieldPath": "mois",      "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "planning",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ouvrierUid", "order": "ASCENDING" },
+        { "fieldPath": "date",       "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "demandes_materiel",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chantierId", "order": "ASCENDING"  },
+        { "fieldPath": "createdAt",  "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "demandes_materiel",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "statut",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "demandes_materiel",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chantierId", "order": "ASCENDING"  },
+        { "fieldPath": "statut",     "order": "ASCENDING"  },
+        { "fieldPath": "createdAt",  "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tickets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ouvrierId", "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "photos_chantier",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chantierId", "order": "ASCENDING"  },
+        { "fieldPath": "createdAt",  "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

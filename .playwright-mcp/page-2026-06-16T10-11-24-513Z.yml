@@ -1,0 +1,190 @@
+- generic [ref=e7]:
+  - complementary [ref=e8]:
+    - generic [ref=e9]:
+      - paragraph [ref=e10]: 🏗 Scaffold-OS
+      - paragraph [ref=e11]: jakoub boughazi
+      - button "Recherche Ctrl K" [ref=e13] [cursor=pointer]:
+        - img [ref=e14]
+        - text: Recherche
+        - generic [ref=e16]: Ctrl K
+    - navigation [ref=e17]:
+      - link "Dashboard" [ref=e18] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e20]
+        - text: Dashboard
+      - link "Chantiers" [ref=e22] [cursor=pointer]:
+        - /url: /chantiers
+        - img [ref=e24]
+        - text: Chantiers
+      - link "Clients" [ref=e26] [cursor=pointer]:
+        - /url: /clients
+        - img [ref=e28]
+        - text: Clients
+      - link "Factures" [ref=e30] [cursor=pointer]:
+        - /url: /factures
+        - img [ref=e32]
+        - text: Factures
+      - link "Devis" [ref=e34] [cursor=pointer]:
+        - /url: /devis
+        - img [ref=e36]
+        - text: Devis
+      - link "Personnel" [ref=e38] [cursor=pointer]:
+        - /url: /personnel
+        - img [ref=e40]
+        - text: Personnel
+      - link "Planning" [ref=e42] [cursor=pointer]:
+        - /url: /planning
+        - img [ref=e44]
+        - text: Planning
+      - link "Équipes" [ref=e46] [cursor=pointer]:
+        - /url: /equipes
+        - img [ref=e48]
+        - text: Équipes
+      - link "Pointage" [ref=e50] [cursor=pointer]:
+        - /url: /pointage
+        - img [ref=e52]
+        - text: Pointage
+      - link "Stock" [ref=e55] [cursor=pointer]:
+        - /url: /stock
+        - img [ref=e57]
+        - text: Stock
+      - link "Tickets" [ref=e59] [cursor=pointer]:
+        - /url: /tickets
+        - img [ref=e61]
+        - text: Tickets
+      - link "Trésorerie" [ref=e63] [cursor=pointer]:
+        - /url: /tresorerie
+        - img [ref=e65]
+        - text: Trésorerie
+      - link "Comptabilité" [ref=e67] [cursor=pointer]:
+        - /url: /comptabilite
+        - img [ref=e69]
+        - text: Comptabilité
+      - link "Paramètres" [ref=e71] [cursor=pointer]:
+        - /url: /parametres
+        - img [ref=e73]
+        - text: Paramètres
+    - button "Déconnexion" [ref=e76] [cursor=pointer]:
+      - img [ref=e77]
+      - text: Déconnexion
+  - main [ref=e79]:
+    - generic [ref=e215]:
+      - generic [ref=e216]:
+        - generic [ref=e217]:
+          - heading "Factures" [level=1] [ref=e218]
+          - paragraph [ref=e219]: 10 factures
+        - button "Nouvelle facture" [ref=e220] [cursor=pointer]:
+          - img [ref=e221]
+          - text: Nouvelle facture
+      - generic [ref=e223]:
+        - button "Actives" [ref=e224] [cursor=pointer]
+        - button "Archives" [ref=e225] [cursor=pointer]
+      - generic [ref=e226]:
+        - generic [ref=e227]:
+          - img [ref=e228]
+          - textbox "Rechercher numéro, client…" [ref=e230]
+        - generic [ref=e231]:
+          - img [ref=e232]
+          - combobox [ref=e234] [cursor=pointer]:
+            - option "Tous les statuts" [selected]
+            - option "Brouillon"
+            - option "Envoyée"
+            - option "Payée"
+            - option "Annulée"
+      - generic [ref=e236]:
+        - generic [ref=e237] [cursor=pointer]:
+          - generic [ref=e238]:
+            - generic [ref=e239]:
+              - generic [ref=e240]: FAC-2026-006
+              - generic [ref=e241]: Envoyée
+            - paragraph [ref=e242]: keefer waner
+            - paragraph [ref=e243]: "Échéance : 16/07/2026"
+          - generic [ref=e244]:
+            - paragraph [ref=e245]: 120,00 €
+            - paragraph [ref=e246]: "Solde : 120,00 €"
+        - generic [ref=e247] [cursor=pointer]:
+          - generic [ref=e248]:
+            - generic [ref=e249]:
+              - generic [ref=e250]: FAC-2026-008
+              - generic [ref=e251]: Envoyée
+            - paragraph [ref=e252]: keefer waner
+            - paragraph [ref=e253]: "Échéance : 16/07/2026"
+          - generic [ref=e254]:
+            - paragraph [ref=e255]: 14 400,00 €
+            - paragraph [ref=e256]: "Solde : 14 400,00 €"
+        - generic [ref=e257] [cursor=pointer]:
+          - generic [ref=e258]:
+            - generic [ref=e259]:
+              - generic [ref=e260]: FAC-2026-005
+              - generic [ref=e261]: Payée
+            - paragraph [ref=e262]: keefer waner
+            - paragraph [ref=e263]: "Échéance : 16/07/2026"
+          - paragraph [ref=e265]: 1 296,00 €
+        - generic [ref=e266] [cursor=pointer]:
+          - generic [ref=e267]:
+            - generic [ref=e268]:
+              - generic [ref=e269]: FAC-2026-010
+              - generic [ref=e270]: Envoyée
+            - paragraph [ref=e271]: keefer waner
+            - paragraph [ref=e272]: "Échéance : 16/07/2026"
+          - generic [ref=e273]:
+            - paragraph [ref=e274]: 2 160,00 €
+            - paragraph [ref=e275]: "Solde : 2 160,00 €"
+        - generic [ref=e276] [cursor=pointer]:
+          - generic [ref=e277]:
+            - generic [ref=e278]:
+              - generic [ref=e279]: FAC-2026-007
+              - generic [ref=e280]: Envoyée
+            - paragraph [ref=e281]: keefer waner
+            - paragraph [ref=e282]: "Échéance : 16/07/2026"
+          - generic [ref=e283]:
+            - paragraph [ref=e284]: 12 000,00 €
+            - paragraph [ref=e285]: "Solde : 12 000,00 €"
+        - generic [ref=e286] [cursor=pointer]:
+          - generic [ref=e287]:
+            - generic [ref=e288]:
+              - generic [ref=e289]: FAC-2026-009
+              - generic [ref=e290]: Envoyée
+            - paragraph [ref=e291]: keefer waner
+            - paragraph [ref=e292]: "Échéance : 16/07/2026"
+          - generic [ref=e293]:
+            - paragraph [ref=e294]: 120,00 €
+            - paragraph [ref=e295]: "Solde : 120,00 €"
+        - generic [ref=e296] [cursor=pointer]:
+          - generic [ref=e297]:
+            - generic [ref=e298]:
+              - generic [ref=e299]: FAC-2026-003
+              - generic [ref=e300]: Payée
+            - paragraph [ref=e301]: keefer waner
+            - paragraph [ref=e302]: "Échéance : 15/07/2026"
+          - paragraph [ref=e304]: 14,40 €
+        - generic [ref=e305] [cursor=pointer]:
+          - generic [ref=e306]:
+            - generic [ref=e307]:
+              - generic [ref=e308]: FAC-2026-001
+              - generic [ref=e309]: Envoyée
+            - paragraph [ref=e310]: keefer waner
+            - paragraph [ref=e311]: "Échéance : 15/07/2026"
+          - generic [ref=e312]:
+            - paragraph [ref=e313]: 540,00 €
+            - paragraph [ref=e314]: "Solde : 540,00 €"
+        - generic [ref=e315] [cursor=pointer]:
+          - generic [ref=e316]:
+            - generic [ref=e317]:
+              - generic [ref=e318]: FAC-2026-002
+              - generic [ref=e319]: Envoyée
+            - paragraph [ref=e320]: keefer waner
+            - paragraph [ref=e321]: "Échéance : 15/07/2026"
+          - generic [ref=e322]:
+            - paragraph [ref=e323]: 1 620,00 €
+            - paragraph [ref=e324]: "Solde : 1 620,00 €"
+        - generic [ref=e325] [cursor=pointer]:
+          - generic [ref=e326]:
+            - generic [ref=e327]:
+              - generic [ref=e328]: FAC-2026-004
+              - generic [ref=e329]: Envoyée
+            - paragraph [ref=e330]: keefer waner
+            - paragraph [ref=e331]: "Échéance : 15/07/2026"
+          - generic [ref=e332]:
+            - paragraph [ref=e333]: 3 600,00 €
+            - paragraph [ref=e334]: "Solde : 3 600,00 €"

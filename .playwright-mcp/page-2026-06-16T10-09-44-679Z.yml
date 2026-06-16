@@ -1,0 +1,99 @@
+- generic [ref=e7]:
+  - complementary [ref=e8]:
+    - generic [ref=e9]:
+      - paragraph [ref=e10]: 🏗 Scaffold-OS
+      - paragraph [ref=e11]: jakoub boughazi
+      - button "Recherche Ctrl K" [ref=e13] [cursor=pointer]:
+        - img [ref=e14]
+        - text: Recherche
+        - generic [ref=e16]: Ctrl K
+    - navigation [ref=e17]:
+      - link "Dashboard" [ref=e18] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e20]
+        - text: Dashboard
+      - link "Chantiers" [ref=e22] [cursor=pointer]:
+        - /url: /chantiers
+        - img [ref=e24]
+        - text: Chantiers
+      - link "Clients" [ref=e26] [cursor=pointer]:
+        - /url: /clients
+        - img [ref=e28]
+        - text: Clients
+      - link "Factures" [ref=e30] [cursor=pointer]:
+        - /url: /factures
+        - img [ref=e32]
+        - text: Factures
+      - link "Devis" [ref=e34] [cursor=pointer]:
+        - /url: /devis
+        - img [ref=e36]
+        - text: Devis
+      - link "Personnel" [ref=e38] [cursor=pointer]:
+        - /url: /personnel
+        - img [ref=e40]
+        - text: Personnel
+      - link "Planning" [ref=e42] [cursor=pointer]:
+        - /url: /planning
+        - img [ref=e44]
+        - text: Planning
+      - link "Équipes" [ref=e46] [cursor=pointer]:
+        - /url: /equipes
+        - img [ref=e48]
+        - text: Équipes
+      - link "Pointage" [ref=e50] [cursor=pointer]:
+        - /url: /pointage
+        - img [ref=e52]
+        - text: Pointage
+      - link "Stock" [ref=e55] [cursor=pointer]:
+        - /url: /stock
+        - img [ref=e57]
+        - text: Stock
+      - link "Tickets" [ref=e59] [cursor=pointer]:
+        - /url: /tickets
+        - img [ref=e61]
+        - text: Tickets
+      - link "Trésorerie" [ref=e63] [cursor=pointer]:
+        - /url: /tresorerie
+        - img [ref=e65]
+        - text: Trésorerie
+      - link "Comptabilité" [ref=e67] [cursor=pointer]:
+        - /url: /comptabilite
+        - img [ref=e69]
+        - text: Comptabilité
+      - link "Paramètres" [ref=e71] [cursor=pointer]:
+        - /url: /parametres
+        - img [ref=e73]
+        - text: Paramètres
+    - button "Déconnexion" [ref=e76] [cursor=pointer]:
+      - img [ref=e77]
+      - text: Déconnexion
+  - main [ref=e79]:
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - button [ref=e82] [cursor=pointer]:
+          - img [ref=e83]
+        - generic [ref=e85]:
+          - heading "Nouvelle facture" [level=1] [ref=e86]
+          - paragraph [ref=e87]: Étape 1 / 4
+      - generic [ref=e88]:
+        - button "Client & Chantier" [ref=e89]
+        - button "Lignes" [ref=e90]
+        - button "Dates & Options" [ref=e91]
+        - button "Aperçu" [ref=e92]
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - paragraph [ref=e96]: Sélectionner le client
+          - generic [ref=e97]:
+            - generic [ref=e98]: Client
+            - combobox [ref=e99] [cursor=pointer]:
+              - option "Choisir un client…"
+              - option "keefer waner" [selected]
+        - generic [ref=e102]:
+          - paragraph [ref=e103]: Chantier lié
+          - generic [ref=e104]:
+            - generic [ref=e105]: Chantier
+            - combobox [ref=e106] [cursor=pointer]:
+              - option "Choisir un chantier…" [selected]
+              - option "az"
+              - option "eglise"
+        - button "Suivant →" [disabled] [ref=e101]

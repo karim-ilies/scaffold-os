@@ -1,0 +1,136 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function role() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+    }
+    function isPatron()    { return role() == 'patron' }
+    function isChef()      { return role() == 'chef_equipe' }
+    function isOuvrier()   { return role() == 'ouvrier' }
+    function isComptable() { return role() == 'comptable' }
+    function isAuth()      { return request.auth != null }
+
+    // USERS
+    match /users/{uid} {
+      allow read:   if request.auth.uid == uid || isPatron()
+      allow create: if request.auth.uid == uid || isPatron()
+      allow update: if request.auth.uid == uid || isPatron()
+      allow delete: if false
+    }
+
+    // INVITATIONS
+    match /invitations/{token} {
+      allow read:   if isAuth()
+      allow create: if isPatron()
+      allow update: if isAuth()
+      allow delete: if isPatron()
+    }
+
+    // CLIENTS
+    match /clients/{id} {
+      allow read, write: if isPatron() || isComptable()
+      allow delete:      if false
+    }
+
+    // FACTURES — suppression absolument interdite
+    match /factures/{id} {
+      allow read:   if isPatron() || isComptable()
+      allow create: if isPatron()
+      allow update: if isPatron()
+      allow delete: if false
+    }
+
+    // DEVIS
+    match /devis/{id} {
+      allow read, write: if isPatron()
+      allow delete:      if isPatron()
+    }
+
+    // CHANTIERS
+    match /chantiers/{id} {
+      allow read:   if isAuth()
+      allow write:  if isPatron() || isChef()
+      allow delete: if isPatron()
+    }
+
+    // POINTAGES
+    match /pointages/{id} {
+      allow create: if isAuth()
+      allow read:   if request.auth.uid == resource.data.ouvrierId
+                    || isPatron() || isChef()
+      allow update: if isPatron() || isChef()
+                    || (request.auth.uid == resource.data.ouvrierId
+                        && resource.data.statut == 'en_cours')
+      allow delete: if false
+    }
+
+    // FICHES MENSUELLES
+    match /fiches_mensuelles/{id} {
+      allow read, write, delete: if isPatron()
+    }
+
+    // STOCK
+    match /stock/{id} {
+      allow read:  if isPatron() || isChef()
+      allow write: if isPatron()
+    }
+
+    // TICKETS
+    match /tickets/{id} {
+      allow create: if isAuth()
+      allow read:   if request.auth.uid == resource.data.ouvrierId
+                    || isPatron() || isChef()
+      allow update: if isPatron()
+      allow delete: if false
+    }
+
+    // DEMANDES MATÉRIEL
+    match /demandes_materiel/{id} {
+      allow read:   if isAuth()
+      allow create: if isAuth()
+      allow update: if isPatron() || isChef()
+      allow delete: if isPatron()
+    }
+
+    // ÉQUIPES
+    match /equipes/{id} {
+      allow read:   if isPatron() || isChef()
+      allow create: if isPatron()
+      allow update: if isPatron()
+      allow delete: if isPatron()
+    }
+
+    // PHOTOS CHANTIER
+    match /photos_chantier/{id} {
+      allow read:   if isAuth()
+      allow create: if isAuth()
+      allow delete: if isPatron() || request.auth.uid == resource.data.auteurId
+      allow update: if false
+    }
+
+    // PLANNING
+    match /planning/{id} {
+      allow read:   if isAuth()
+      allow create: if isPatron() || isChef()
+      allow update: if isPatron() || isChef()
+      allow delete: if isPatron() || isChef()
+    }
+
+    // TRÉSORERIE
+    match /tresorerie/{id} {
+      allow read:  if isPatron() || isComptable()
+      allow write: if isPatron()
+    }
+    match /tresorerie_solde/{id} {
+      allow read:  if isPatron() || isComptable()
+      allow write: if isPatron()
+    }
+
+    // PARAMÈTRES
+    match /parametres/{id} {
+      allow read:  if isAuth()
+      allow write: if isPatron()
+    }
+  }
+}
