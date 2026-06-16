@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { collection, query, orderBy, where, onSnapshot, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { getFunctions, httpsCallable } from 'firebase/functions'
 import { db, storage, STORAGE_ENABLED } from '../../firebase/config'
+import app from '../../firebase/config'
 import { useAuth }      from '../../hooks/useAuth'
 import { useChantiers } from '../../hooks/useChantiers'
 import { formatEuro, formatDate, formatStatut } from '../../utils/formatters'
@@ -109,9 +111,6 @@ function ScanTicket({ chantiers, user, onClose }) {
     setPhoto(file)
     setPhotoUrl(URL.createObjectURL(file))
 
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
-    if (!apiKey) return
-
     setScanning(true)
     try {
       const base64 = await new Promise((resolve, reject) => {
@@ -121,34 +120,13 @@ function ScanTicket({ chantiers, user, onClose }) {
         reader.readAsDataURL(file)
       })
 
-      const mediaType = file.type?.startsWith('image/') ? file.type : 'image/jpeg'
+      const mimeType  = file.type?.startsWith('image/') ? file.type : 'image/jpeg'
+      const functions = getFunctions(app, 'europe-west1')
+      const analyse   = httpsCallable(functions, 'analyseTicket')
+      const { data: result } = await analyse({ imageBase64: base64, mimeType })
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key':  apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model:      'claude-haiku-4-5-20251001',
-          max_tokens: 256,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-              { type: 'text', text: 'Analyse ce ticket de caisse. Réponds UNIQUEMENT en JSON valide sans markdown : {"montant":"45.90","date":"2024-03-15","type":"repas","description":"nom du commerce"}. Types possibles: carburant, materiau, repas, autre. Date format YYYY-MM-DD. Si une info est introuvable mets null.' },
-            ],
-          }],
-        }),
-      })
-
-      const data   = await res.json()
-      const result = JSON.parse(data.content?.[0]?.text || '{}')
-
-      if (result.montant)    setMontant(String(result.montant))
-      if (result.date)       setDate(result.date)
+      if (result.montant)     setMontant(String(result.montant))
+      if (result.date)        setDate(result.date)
       if (result.type && ['carburant', 'materiau', 'repas', 'autre'].includes(result.type)) setType(result.type)
       if (result.description) setDescription(result.description)
 

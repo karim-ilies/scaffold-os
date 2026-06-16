@@ -20,6 +20,10 @@
       }
     ]
   },
+  "functions": {
+    "source": "functions",
+    "codebase": "scaffold-os"
+  },
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"

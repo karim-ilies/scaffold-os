@@ -1,0 +1,61 @@
+const { onCall, HttpsError } = require('firebase-functions/v2/https')
+const { defineSecret }      = require('firebase-functions/params')
+
+const anthropicKey = defineSecret('ANTHROPIC_API_KEY')
+
+exports.analyseTicket = onCall(
+  { region: 'europe-west1', secrets: [anthropicKey] },
+  async (request) => {
+    // Vérification auth
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Vous devez être connecté.')
+    }
+
+    const { imageBase64, mimeType } = request.data
+    if (!imageBase64 || !mimeType) {
+      throw new HttpsError('invalid-argument', 'imageBase64 et mimeType requis.')
+    }
+
+    const apiKey = anthropicKey.value()
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key':         apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type':      'application/json',
+      },
+      body: JSON.stringify({
+        model:      'claude-haiku-4-5-20251001',
+        max_tokens: 256,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type:   'image',
+              source: { type: 'base64', media_type: mimeType, data: imageBase64 },
+            },
+            {
+              type: 'text',
+              text: 'Analyse ce ticket de caisse. Retourne UNIQUEMENT un objet JSON valide sans markdown, avec ces champs : montant (nombre décimal en euros, ex: 45.90), date (format YYYY-MM-DD), type (repas|carburant|materiel|autre), description (texte court). Si un champ est illisible, mets null.',
+            },
+          ],
+        }],
+      }),
+    })
+
+    if (!resp.ok) {
+      throw new HttpsError('internal', `Anthropic error ${resp.status}`)
+    }
+
+    const json   = await resp.json()
+    const text   = json.content?.[0]?.text || '{}'
+    const match  = text.match(/\{[\s\S]*\}/)
+
+    try {
+      return JSON.parse(match?.[0] || '{}')
+    } catch {
+      return {}
+    }
+  }
+)

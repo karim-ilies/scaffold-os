@@ -1,0 +1,15 @@
+{
+  "name": "scaffold-os-functions",
+  "description": "Firebase Cloud Functions — Scaffold-OS",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": { "node": "22" },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-functions": "^6.0.0",
+    "firebase-admin": "^12.0.0"
+  },
+  "private": true
+}
