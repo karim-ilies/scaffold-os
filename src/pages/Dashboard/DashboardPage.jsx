@@ -21,6 +21,15 @@ import LocationOnIcon    from '@mui/icons-material/LocationOn'
 import ExpandMoreIcon    from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon    from '@mui/icons-material/ExpandLess'
 
+const FS = {
+  xs:   'clamp(9px, 2.5vw, 11px)',
+  sm:   'clamp(10px, 2.8vw, 12px)',
+  base: 'clamp(11px, 3.2vw, 13px)',
+  md:   'clamp(12px, 3.5vw, 14px)',
+  h1:   'clamp(16px, 4.5vw, 20px)',
+  kpi:  'clamp(18px, 5vw, 22px)',
+}
+
 const today   = dateToString(new Date())
 const moisCur = today.slice(0, 7)
 const moisPrev = (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0, 7) })()
@@ -92,10 +101,10 @@ export default function DashboardPage() {
   return (
     <div style={{ background: '#F7F8FA', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <div style={{ background: '#0d3580', padding: '20px 24px' }}>
-        <h1 style={{ fontSize: 20, fontWeight: '700', color: '#fff', margin: 0 }}>
+        <h1 style={{ fontSize: FS.h1, fontWeight: '700', color: '#fff', margin: 0 }}>
           Bonjour, {user?.prenom || user?.email?.split('@')[0] || '—'} 👋
         </h1>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: '4px 0 0' }}>{today}</p>
+        <p style={{ fontSize: FS.base, color: 'rgba(255,255,255,0.6)', margin: '4px 0 0' }}>{today}</p>
       </div>
 
       <div style={{ padding: 20 }}>
@@ -142,8 +151,8 @@ export default function DashboardPage() {
                   <ConstructionIcon style={{ fontSize: 16, color: '#0d3580' }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: '600', color: '#111111', margin: 0 }}>{c.nom}</p>
-                  <p style={{ fontSize: 11, color: '#6b7280', margin: '1px 0 0' }}>Depuis {formatDate(c.dateDebut)}</p>
+                  <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0 }}>{c.nom}</p>
+                  <p style={{ fontSize: FS.xs, color: '#6b7280', margin: '1px 0 0' }}>Depuis {formatDate(c.dateDebut)}</p>
                 </div>
                 <ChevronRightIcon style={{ fontSize: 18, color: '#c8d3ee' }} />
               </div>
@@ -158,10 +167,10 @@ export default function DashboardPage() {
               <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #f3f4f6' }}>
                 <DescriptionIcon style={{ fontSize: 18, color: '#c2410c' }} />
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: '600', color: '#111111', margin: 0 }}>{f.numero}</p>
-                  <p style={{ fontSize: 11, color: '#c2410c', margin: '1px 0 0' }}>{joursDeRetard(f)} jours de retard</p>
+                  <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0 }}>{f.numero}</p>
+                  <p style={{ fontSize: FS.xs, color: '#c2410c', margin: '1px 0 0' }}>{joursDeRetard(f)} jours de retard</p>
                 </div>
-                <p style={{ fontSize: 14, fontWeight: '600', color: '#c2410c', margin: 0 }}>{formatEuro(f.solde)}</p>
+                <p style={{ fontSize: FS.md, fontWeight: '600', color: '#c2410c', margin: 0 }}>{formatEuro(f.solde)}</p>
               </div>
             ))}
           </Section>
@@ -174,8 +183,8 @@ export default function DashboardPage() {
               <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f3f4f6' }}>
                 <WarningIcon style={{ fontSize: 16, color: '#c2410c' }} />
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: '600', color: '#111111', margin: 0 }}>{s.nom}</p>
-                  <p style={{ fontSize: 11, color: '#c2410c', margin: 0 }}>Stock : {s.quantiteDisponible} / min {s.quantiteMin}</p>
+                  <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0 }}>{s.nom}</p>
+                  <p style={{ fontSize: FS.xs, color: '#c2410c', margin: 0 }}>Stock : {s.quantiteDisponible} / min {s.quantiteMin}</p>
                 </div>
               </div>
             ))}
@@ -216,7 +225,7 @@ function DemandesWidget({ style, onNavigate }) {
         <div style={{ width: 28, height: 28, borderRadius: 8, background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <WarningAmberIcon style={{ fontSize: 16, color: '#dc2626' }} />
         </div>
-        <p style={{ fontSize: 13, fontWeight: '700', color: '#dc2626', margin: 0 }}>
+        <p style={{ fontSize: FS.base, fontWeight: '700', color: '#dc2626', margin: 0 }}>
           {demandes.length} demande(s) de matériel en attente
         </p>
       </div>
@@ -228,18 +237,18 @@ function DemandesWidget({ style, onNavigate }) {
           style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 13, fontWeight: '600', color: '#111111', margin: 0 }}>{d.chantierNom}</p>
-            <p style={{ fontSize: 11, color: '#6b7280', margin: '2px 0 0' }}>
+            <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0 }}>{d.chantierNom}</p>
+            <p style={{ fontSize: FS.xs, color: '#6b7280', margin: '2px 0 0' }}>
               {d.articles?.length || 0} article(s) · par {d.creeParNom}
             </p>
           </div>
-          <span style={{ fontSize: 11, color: '#6b7280', flexShrink: 0 }}>{formatDate(d.createdAt)}</span>
+          <span style={{ fontSize: FS.xs, color: '#6b7280', flexShrink: 0 }}>{formatDate(d.createdAt)}</span>
           <ChevronRightIcon style={{ fontSize: 16, color: '#c8d3ee', flexShrink: 0 }} />
         </div>
       ))}
 
       {demandes.length > 4 && (
-        <p style={{ fontSize: 12, color: '#6b7280', margin: '8px 0 0', textAlign: 'center' }}>
+        <p style={{ fontSize: FS.sm, color: '#6b7280', margin: '8px 0 0', textAlign: 'center' }}>
           + {demandes.length - 4} autre(s) demande(s)
         </p>
       )}
@@ -258,10 +267,10 @@ function MonPlanningWidget({ userId, style }) {
 
   return (
     <div style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '14px 16px', ...style }}>
-      <p style={{ fontSize: 13, fontWeight: '600', color: '#111111', margin: '0 0 10px' }}>Mon planning</p>
+      <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: '0 0 10px' }}>Mon planning</p>
 
       {sorted.length === 0 ? (
-        <p style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', padding: '16px 0', margin: 0 }}>
+        <p style={{ fontSize: FS.base, color: '#9ca3af', textAlign: 'center', padding: '16px 0', margin: 0 }}>
           Aucune affectation prévue — contactez votre patron
         </p>
       ) : sorted.map(p => {
@@ -279,24 +288,24 @@ function MonPlanningWidget({ userId, style }) {
               <CalendarTodayIcon style={{ fontSize: 16, color: isToday ? '#fff' : '#0d3580' }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 13, fontWeight: '700', color: '#111111', margin: 0 }}>{p.chantierNom}</p>
-              <p style={{ fontSize: 11, color: '#6b7280', margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <p style={{ fontSize: FS.base, fontWeight: '700', color: '#111111', margin: 0 }}>{p.chantierNom}</p>
+              <p style={{ fontSize: FS.xs, color: '#6b7280', margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <LocationOnIcon style={{ fontSize: 12 }} />{p.chantierAdresse !== '—' ? p.chantierAdresse : 'Adresse non précisée'}
               </p>
               {p.chefNom && (
-                <p style={{ fontSize: 11, color: '#0d3580', margin: '2px 0 0', fontWeight: '500' }}>
+                <p style={{ fontSize: FS.xs, color: '#0d3580', margin: '2px 0 0', fontWeight: '500' }}>
                   Chef : {p.chefNom}
                 </p>
               )}
               {p.coequipiers && (
-                <p style={{ fontSize: 11, color: '#6b7280', margin: '2px 0 0' }}>
+                <p style={{ fontSize: FS.xs, color: '#6b7280', margin: '2px 0 0' }}>
                   Avec : {p.coequipiers}
                 </p>
               )}
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <span style={{
-                fontSize: 11, fontWeight: '700', padding: '3px 8px', borderRadius: 20,
+                fontSize: FS.xs, fontWeight: '700', padding: '3px 8px', borderRadius: 20,
                 background: isToday ? '#0d3580' : '#e8edf8',
                 color: isToday ? '#fff' : '#0d3580',
               }}>
@@ -364,9 +373,9 @@ function TerrainLiveWidget({ chantiers, style }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block', animation: 'livePulse 1.5s infinite' }} />
-          <p style={{ fontSize: 13, fontWeight: '700', color: '#111111', margin: 0 }}>Terrain en direct</p>
+          <p style={{ fontSize: FS.base, fontWeight: '700', color: '#111111', margin: 0 }}>Terrain en direct</p>
         </div>
-        <span style={{ fontSize: 11, fontWeight: '600', background: '#e8edf8', color: '#0d3580', padding: '3px 10px', borderRadius: 20 }}>
+        <span style={{ fontSize: FS.xs, fontWeight: '600', background: '#e8edf8', color: '#0d3580', padding: '3px 10px', borderRadius: 20 }}>
           {actifs.length} actif{actifs.length > 1 ? 's' : ''}
         </span>
       </div>
@@ -385,14 +394,14 @@ function TerrainLiveWidget({ chantiers, style }) {
                 <ConstructionIcon style={{ fontSize: 16, color: '#0d3580' }} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: '600', color: '#111111', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {chantier?.nom || 'Chantier inconnu'}
                 </p>
-                <p style={{ fontSize: 11, color: '#6b7280', margin: '1px 0 0' }}>
+                <p style={{ fontSize: FS.xs, color: '#6b7280', margin: '1px 0 0' }}>
                   {pts.length} ouvrier{pts.length > 1 ? 's' : ''}
                 </p>
               </div>
-              <span style={{ fontSize: 11, fontWeight: '600', background: '#e8edf8', color: '#0d3580', padding: '2px 8px', borderRadius: 20, flexShrink: 0 }}>
+              <span style={{ fontSize: FS.xs, fontWeight: '600', background: '#e8edf8', color: '#0d3580', padding: '2px 8px', borderRadius: 20, flexShrink: 0 }}>
                 👷 {pts.length}
               </span>
               {isOpen
@@ -410,9 +419,9 @@ function TerrainLiveWidget({ chantiers, style }) {
                   return (
                     <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < pts.length - 1 ? '1px solid #f9fafb' : 'none' }}>
                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a', flexShrink: 0 }} />
-                      <p style={{ fontSize: 12, fontWeight: '500', color: '#374151', margin: 0, flex: 1 }}>{nom}</p>
+                      <p style={{ fontSize: FS.sm, fontWeight: '500', color: '#374151', margin: 0, flex: 1 }}>{nom}</p>
                       {dur && (
-                        <span style={{ fontSize: 11, color: '#6b7280', background: '#f3f4f6', padding: '1px 7px', borderRadius: 20 }}>
+                        <span style={{ fontSize: FS.xs, color: '#6b7280', background: '#f3f4f6', padding: '1px 7px', borderRadius: 20 }}>
                           {dur}
                         </span>
                       )}
@@ -431,9 +440,9 @@ function TerrainLiveWidget({ chantiers, style }) {
 function KPI({ label, value, sub, subColor = '#6b7280', onClick }) {
   return (
     <div onClick={onClick} style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '14px 16px', cursor: onClick ? 'pointer' : 'default' }}>
-      <p style={{ fontSize: 11, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>{label}</p>
-      <p style={{ fontSize: 22, fontWeight: '700', color: '#0d3580', margin: '0 0 4px', lineHeight: 1 }}>{value}</p>
-      <p style={{ fontSize: 11, color: subColor, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>{sub}</p>
+      <p style={{ fontSize: FS.xs, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>{label}</p>
+      <p style={{ fontSize: FS.kpi, fontWeight: '700', color: '#0d3580', margin: '0 0 4px', lineHeight: 1 }}>{value}</p>
+      <p style={{ fontSize: FS.xs, color: subColor, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>{sub}</p>
     </div>
   )
 }
@@ -442,8 +451,8 @@ function Section({ titre, lienLabel, onLien, children, style }) {
   return (
     <div style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '14px 16px', ...style }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <p style={{ fontSize: 13, fontWeight: '600', color: '#111111', margin: 0 }}>{titre}</p>
-        {onLien && <button onClick={onLien} style={{ fontSize: 11, fontWeight: '600', color: '#0d3580', background: 'transparent', border: 'none', cursor: 'pointer' }}>{lienLabel} →</button>}
+        <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0 }}>{titre}</p>
+        {onLien && <button onClick={onLien} style={{ fontSize: FS.xs, fontWeight: '600', color: '#0d3580', background: 'transparent', border: 'none', cursor: 'pointer' }}>{lienLabel} →</button>}
       </div>
       {children}
     </div>

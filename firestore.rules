@@ -12,18 +12,30 @@ service cloud.firestore {
     function isAuth()      { return request.auth != null }
 
     // USERS
+    // C2 FIX — un ouvrier ne peut plus modifier son rôle ni son statut actif
     match /users/{uid} {
       allow read:   if request.auth.uid == uid || isPatron()
       allow create: if request.auth.uid == uid || isPatron()
-      allow update: if request.auth.uid == uid || isPatron()
+      allow update: if isPatron()
+        || (request.auth.uid == uid
+            && !request.resource.data.diff(resource.data)
+                .affectedKeys().hasAny(['role', 'actif']))
       allow delete: if false
     }
 
     // INVITATIONS
+    // C3 FIX — lecture publique (nécessaire pour /rejoindre avant connexion)
+    //          mise à jour restreinte : seul le patron peut tout changer,
+    //          un user connecté peut uniquement marquer "accepte" (son inscription)
     match /invitations/{token} {
-      allow read:   if isAuth()
+      allow read:   if true
       allow create: if isPatron()
-      allow update: if isAuth()
+      allow update: if isPatron()
+        || (isAuth()
+            && request.resource.data.statut == 'accepte'
+            && resource.data.statut != 'accepte'
+            && request.resource.data.diff(resource.data)
+                .affectedKeys().hasOnly(['statut', 'accepteAt', 'uid']))
       allow delete: if isPatron()
     }
 
@@ -55,13 +67,17 @@ service cloud.firestore {
     }
 
     // POINTAGES
+    // I3 FIX — l'ouvrier ne peut modifier que heureFin/statut/coordsFin sur un pointage en cours
     match /pointages/{id} {
       allow create: if isAuth()
       allow read:   if request.auth.uid == resource.data.ouvrierId
                     || isPatron() || isChef()
       allow update: if isPatron() || isChef()
-                    || (request.auth.uid == resource.data.ouvrierId
-                        && resource.data.statut == 'en_cours')
+        || (request.auth.uid == resource.data.ouvrierId
+            && resource.data.statut == 'en_cours'
+            && request.resource.data.diff(resource.data)
+                .affectedKeys().hasOnly(['heureFin', 'statut', 'coordsFin', 'heuresTravaillees'])
+            && request.resource.data.statut in ['en_cours', 'a_verifier'])
       allow delete: if false
     }
 

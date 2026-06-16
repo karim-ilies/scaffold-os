@@ -6,6 +6,7 @@ import { formatEuro, formatDate } from '../../utils/formatters'
 import { estEnRetard, joursDeRetard as jdr } from '../../utils/calcFacture'
 import { generateFEC, downloadFEC }           from '../../utils/exportFEC'
 import { envoyerEmailRelance, EMAILJS_FACTURE_CONFIGURE } from '../../utils/emailFacture'
+import { useResponsive } from '../../hooks/useResponsive'
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
 import DownloadIcon       from '@mui/icons-material/Download'
 import WarningIcon        from '@mui/icons-material/Warning'
@@ -23,6 +24,7 @@ export default function ComptabilitePage() {
   const { factures } = useFactures()
   const { clients }  = useClients()
   const { parametres } = useParametres()
+  const { isMobile } = useResponsive()
   const [onglet, setOnglet]     = useState('tva')
   const [relanceSending, setRelanceSending] = useState({}) // { [factureId]: 'sending' | 'done' | 'error' }
   const [annee, setAnnee]       = useState(new Date().getFullYear())
@@ -97,22 +99,22 @@ export default function ComptabilitePage() {
     <div style={{ background: '#F7F8FA', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <div style={{ background: '#0d3580', padding: '16px 24px' }}>
         <h1 style={{ fontSize: 20, fontWeight: '700', color: '#fff', margin: 0 }}>Comptabilité</h1>
-        <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
+        <div style={{ display: 'flex', gap: 4, marginTop: 10, overflowX: 'auto', paddingBottom: 2 }}>
           {[['tva', 'Récap TVA'], ['fec', 'Export FEC'], ['relances', 'Relances']].map(([k, l]) => (
-            <button key={k} onClick={() => setOnglet(k)} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: onglet === k ? '600' : '400', background: onglet === k ? 'rgba(255,255,255,0.2)' : 'transparent', color: onglet === k ? '#fff' : 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
+            <button key={k} onClick={() => setOnglet(k)} style={{ padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, fontWeight: onglet === k ? '600' : '400', background: onglet === k ? 'rgba(255,255,255,0.2)' : 'transparent', color: onglet === k ? '#fff' : 'rgba(255,255,255,0.6)', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
               {l}{k === 'relances' && impayees.length > 0 ? ` (${impayees.length})` : ''}
             </button>
           ))}
         </div>
       </div>
 
-      <div style={{ padding: 24 }}>
+      <div style={{ padding: isMobile ? '16px 12px' : 24 }}>
         {/* Sélecteurs communs */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
           <input type="number" value={annee} onChange={e => setAnnee(parseInt(e.target.value) || new Date().getFullYear())} style={{ background: '#FFFFFF', border: '1.5px solid #0d3580', borderRadius: 8, padding: '8px 12px', fontSize: 13, color: '#111111', outline: 'none', width: 80 }} />
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {TRIMESTRES.map(t => (
-              <button key={t.k} onClick={() => setTrimestre(t.k)} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: '500', background: trimestreK === t.k ? '#0d3580' : '#FFFFFF', color: trimestreK === t.k ? '#fff' : '#6b7280', border: trimestreK === t.k ? 'none' : '1px solid #e2e4ea', cursor: 'pointer' }}>
+              <button key={t.k} onClick={() => setTrimestre(t.k)} style={{ padding: '7px 14px', borderRadius: 8, border: trimestreK === t.k ? 'none' : '1px solid #e2e4ea', fontSize: 12, fontWeight: '500', background: trimestreK === t.k ? '#0d3580' : '#FFFFFF', color: trimestreK === t.k ? '#fff' : '#6b7280', cursor: 'pointer' }}>
                 {t.k}
               </button>
             ))}
@@ -125,7 +127,8 @@ export default function ComptabilitePage() {
               <p style={{ fontSize: 15, fontWeight: '600', color: '#111111', margin: '0 0 16px' }}>
                 Récapitulatif TVA — {trimestreK} {annee}
               </p>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 280 }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid #0d3580' }}>
                     {['Régime', 'CA HT', 'TVA collectée'].map(h => (
@@ -156,6 +159,7 @@ export default function ComptabilitePage() {
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}

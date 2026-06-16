@@ -179,8 +179,10 @@ export default function App() {
             </PL>
           } />
 
-          {/* Seed — dev only, non protégé */}
-          <Route path="/seed-test" element={<SeedPage />} />
+          {/* Seed — patron uniquement */}
+          <Route path="/seed-test" element={
+            <PL allowedRoles={['patron']}><SeedPage /></PL>
+          } />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -2,6 +2,16 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
+    function isPatron() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'patron'
+    }
+    function isComptable() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'comptable'
+    }
+    function isChef() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'chef_equipe'
+    }
+
     // Photos chantier — lecture tous authentifiés, écriture image < 10MB
     match /photos_chantier/{chantierId}/{file} {
       allow read:  if request.auth != null
@@ -13,35 +23,34 @@ service firebase.storage {
 
     // Documents ouvriers — ouvrier voit les siens, patron voit tout
     match /documents/{uid}/{file} {
-      allow read, write: if request.auth.uid == uid
-                         || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'patron'
+      allow read, write: if request.auth.uid == uid || isPatron()
     }
 
     // Archives pointages — patron uniquement
     match /archives/{uid}/{file} {
-      allow read, write: if firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'patron'
+      allow read, write: if isPatron()
     }
 
-    // PDFs factures
+    // I2 FIX — PDFs factures : patron et comptable uniquement, PDF uniquement
     match /factures/{factureId}/{file} {
-      allow read:  if request.auth != null
+      allow read:  if request.auth != null && (isPatron() || isComptable())
       allow write: if request.auth != null
+                   && (isPatron() || isComptable())
                    && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('application/pdf')
     }
 
     // Logo et paramètres société — patron uniquement
     match /parametres/{file} {
       allow read:  if request.auth != null
-      allow write: if firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'patron'
+      allow write: if isPatron()
                    && request.resource.size < 2 * 1024 * 1024
                    && request.resource.contentType.matches('image/.*')
     }
 
-    // Tickets de caisse — propriétaire ou patron
+    // Tickets de caisse — propriétaire ou patron/chef
     match /tickets/{uid}/{file} {
-      allow read:  if request.auth.uid == uid
-                   || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'patron'
-                   || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'chef_equipe'
+      allow read:  if request.auth.uid == uid || isPatron() || isChef()
       allow write: if request.auth != null
                    && request.resource.size < 5 * 1024 * 1024
                    && request.resource.contentType.matches('image/.*')
