@@ -220,9 +220,11 @@ export default function PointagePatronPage() {
                 <thead>
                   <tr>
                     <th style={{ ...thS, width: 120, position: 'sticky', left: 0, background: '#0d3580', color: '#fff' }}>Ouvrier</th>
-                    {nbJours.map(j => (
-                      <th key={j} style={{ ...thS, width: 32, background: '#0d3580', color: '#fff' }}>{j}</th>
-                    ))}
+                    {nbJours.map(j => {
+                      const dow = new Date(annee, mois - 1, j).getDay()
+                      const isWE = dow === 0 || dow === 6
+                      return <th key={j} style={{ ...thS, width: 32, background: isWE ? '#1a4070' : '#0d3580', color: isWE ? 'rgba(255,255,255,0.5)' : '#fff' }}>{j}</th>
+                    })}
                     <th style={{ ...thS, background: '#0d3580', color: '#fff' }}>Total</th>
                   </tr>
                 </thead>
@@ -240,11 +242,13 @@ export default function PointagePatronPage() {
                         >{nomAff}</td>
                         {nbJours.map(j => {
                           const date = `${moisSel}-${String(j).padStart(2, '0')}`
+                          const dow  = new Date(annee, mois - 1, j).getDay()
+                          const isWE = dow === 0 || dow === 6
                           const p    = mesP.find(x => x.date === date)
                           const h    = p?.heuresTravaillees || 0
                           return (
-                            <td key={j} style={{ ...tdS, background: celluleColor(p?.statut, h), textAlign: 'center' }}>
-                              {h > 0 ? formatHeures(h) : ''}
+                            <td key={j} style={{ ...tdS, background: isWE ? '#f9fafb' : celluleColor(p?.statut, h), textAlign: 'center', color: isWE && h === 0 ? '#e2e4ea' : undefined }}>
+                              {h > 0 ? formatHeures(h) : isWE ? '—' : ''}
                             </td>
                           )
                         })}
