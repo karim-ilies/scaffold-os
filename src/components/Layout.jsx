@@ -4,6 +4,7 @@ import { useAuth }       from '../hooks/useAuth'
 import { useResponsive } from '../hooks/useResponsive'
 import { logout }        from '../firebase/auth'
 import GlobalSearch      from './GlobalSearch/GlobalSearch'
+import { PageTransition } from './ui/PageTransition'
 import DashboardIcon        from '@mui/icons-material/Dashboard'
 import ConstructionIcon     from '@mui/icons-material/Construction'
 import DescriptionIcon      from '@mui/icons-material/Description'
@@ -130,7 +131,7 @@ function DesktopLayout({ children, items, onLogout, user, role }) {
         </div>
       </aside>
 
-      <main style={{ flex: 1, overflowY: 'auto' }}>{children}</main>
+      <main style={{ flex: 1, overflowY: 'auto' }}><PageTransition>{children}</PageTransition></main>
     </div>
   )
 }
@@ -140,7 +141,7 @@ function MobileLayout({ children, items, allItems, onLogout, user }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#F7F8FA' }}>
-      <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 72 }}>{children}</main>
+      <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 72 }}><PageTransition>{children}</PageTransition></main>
       <NotificationPanel placement="mobile" />
       <InstallBanner />
 
