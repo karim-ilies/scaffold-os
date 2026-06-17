@@ -87,11 +87,11 @@ export default function Layout({ children }) {
 function DesktopLayout({ children, items, onLogout, user, role }) {
   const linkStyle = ({ isActive }) => ({
     display: 'flex', alignItems: 'center', gap: 10,
-    padding: '9px 16px', borderRadius: 8, textDecoration: 'none',
+    padding: '9px 16px', borderRadius: 10, textDecoration: 'none',
     fontSize: 13, fontWeight: isActive ? '600' : '400',
     color:      isActive ? '#ffffff'              : 'rgba(255,255,255,0.6)',
     background: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
-    transition: 'background 0.15s',
+    transition: 'background 0.15s ease, color 0.15s ease',
   })
 
   return (
