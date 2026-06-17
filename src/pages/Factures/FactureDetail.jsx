@@ -5,6 +5,7 @@ import { db, STORAGE_ENABLED } from '../../firebase/config'
 import { useFactures }   from '../../hooks/useFactures'
 import { useModal }      from '../../context/ModalContext'
 import { useResponsive } from '../../hooks/useResponsive'
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 import { generateFacturePDF, uploadAndGetPdfUrl } from '../../utils/pdfGenerator'
 import { envoyerEmailFacture, EMAILJS_FACTURE_CONFIGURE } from '../../utils/emailFacture'
 import { useParametres } from '../../hooks/useParametres'
@@ -26,6 +27,7 @@ export default function FactureDetail() {
   const { showModal } = useModal()
   const { ajouterPaiement, archiverFacture } = useFactures()
   const { parametres } = useParametres()
+  const copy = useCopyToClipboard()
 
   const [facture,  setFacture]  = useState(null)
   const [client,   setClient]   = useState(null)
@@ -163,7 +165,7 @@ export default function FactureDetail() {
             <ArrowBackIcon style={{ fontSize: 20 }} />
           </button>
           <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: isMobile ? 17 : 20, fontWeight: '700', color: '#fff', margin: 0 }}>{facture.numero}</h1>
+            <h1 onClick={() => copy(facture.numero, 'Numéro')} title="Cliquer pour copier" style={{ fontSize: isMobile ? 17 : 20, fontWeight: '700', color: '#fff', margin: 0, cursor: 'pointer', borderBottom: '1px dashed rgba(255,255,255,0.3)' }}>{facture.numero}</h1>
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '2px 0 0' }}>
               Émise le {formatDate(facture.dateEmission)}
             </p>
