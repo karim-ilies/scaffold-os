@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useClients }  from '../../hooks/useClients'
 import { formatEuro }  from '../../utils/formatters'
 import { useResponsive } from '../../hooks/useResponsive'
+import { EmptyState } from '../../components/ui/EmptyState'
 import AddIcon          from '@mui/icons-material/Add'
 import SearchIcon       from '@mui/icons-material/Search'
 import PersonIcon       from '@mui/icons-material/Person'
@@ -72,10 +73,7 @@ export default function ClientsPage() {
       {/* Liste */}
       <div style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 64 }}>
-            <PersonIcon style={{ fontSize: 48, color: '#c8d3ee' }} />
-            <p style={{ color: '#6b7280', marginTop: 10 }}>Aucun client</p>
-          </div>
+          <EmptyState icon="👥" title="Aucun client" subtitle="Ajoutez votre premier client" action={{ label: '+ Nouveau client', onClick: () => navigate('/clients/new') }} />
         ) : filtered.map(c => (
           <ClientCard key={c.id} client={c} onOpen={() => navigate(`/clients/${c.id}`)} isMobile={isMobile} />
         ))}

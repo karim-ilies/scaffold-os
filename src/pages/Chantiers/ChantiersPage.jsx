@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useChantiers } from '../../hooks/useChantiers'
 import { useClients }   from '../../hooks/useClients'
 import { formatDate, formatStatut } from '../../utils/formatters'
+import { EmptyState } from '../../components/ui/EmptyState'
 import { BADGES } from '../../constants/theme'
 import ChantierForm from './ChantierForm'
 import AddIcon            from '@mui/icons-material/Add'
@@ -104,10 +105,7 @@ export default function ChantiersPage() {
         {loading ? (
           <div style={{ textAlign: 'center', padding: 48, color: '#6b7280' }}>Chargement…</div>
         ) : chantiersFiltres.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 64 }}>
-            <ConstructionIcon style={{ fontSize: 48, color: '#c8d3ee', marginBottom: 12 }} />
-            <p style={{ fontSize: 15, color: '#6b7280', margin: 0 }}>Aucun chantier trouvé</p>
-          </div>
+          <EmptyState icon="🏗️" title="Aucun chantier" subtitle="Ouvrez un nouveau chantier pour démarrer" action={{ label: '+ Nouveau chantier', onClick: () => navigate('/chantiers/new') }} />
         ) : chantiersFiltres.map(c => {
           const client = clientMap[c.clientId]
           const badge  = BADGES[c.statut] || BADGES.en_attente

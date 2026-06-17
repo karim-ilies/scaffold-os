@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import QRCode from 'qrcode'
 import { useStock } from '../../hooks/useStock'
+import { EmptyState } from '../../components/ui/EmptyState'
 import { CATEGORIES_STOCK_LABELS, ETAT_STOCK } from '../../constants/statuts'
 import AddIcon         from '@mui/icons-material/Add'
 import InventoryIcon   from '@mui/icons-material/Inventory'
@@ -82,7 +83,7 @@ export default function StockPage() {
               {loading
                 ? <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40, color: '#6b7280' }}>Chargement…</td></tr>
                 : stockFiltre.length === 0
-                ? <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40 }}><InventoryIcon style={{ fontSize: 40, color: '#c8d3ee' }} /><p style={{ color: '#6b7280', margin: '8px 0 0' }}>Aucun article</p></td></tr>
+                ? <tr><td colSpan={7}><EmptyState icon="📦" title="Stock vide" subtitle="Ajoutez vos premiers articles" action={{ label: '+ Ajouter article', onClick: () => setModalOpen(true) }} /></td></tr>
                 : stockFiltre.map((s, i) => {
                     const alertStock = s.quantiteDisponible < s.quantiteMin
                     return (

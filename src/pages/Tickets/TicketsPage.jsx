@@ -8,6 +8,7 @@ import { useAuth }      from '../../hooks/useAuth'
 import { useChantiers } from '../../hooks/useChantiers'
 import { formatEuro, formatDate, formatStatut } from '../../utils/formatters'
 import { BADGES } from '../../constants/theme'
+import { EmptyState } from '../../components/ui/EmptyState'
 import AddIcon       from '@mui/icons-material/Add'
 import CameraAltIcon from '@mui/icons-material/CameraAlt'
 import ReceiptIcon   from '@mui/icons-material/Receipt'
@@ -59,7 +60,7 @@ export default function TicketsPage() {
         {loading
           ? <div style={{ textAlign: 'center', padding: 48, color: '#6b7280' }}>Chargement…</div>
           : tickets.length === 0
-          ? <div style={{ textAlign: 'center', padding: 64 }}><ReceiptIcon style={{ fontSize: 48, color: '#c8d3ee' }} /><p style={{ color: '#6b7280', marginTop: 10 }}>Aucun ticket</p></div>
+          ? <EmptyState icon="🧾" title="Aucun ticket" subtitle="Scannez votre premier ticket de dépense" />
           : tickets.map(t => {
               const chantier = chantiers.find(c => c.id === t.chantierId)
               const typeLabel = { carburant: 'Carburant', materiau: 'Matériau', repas: 'Repas', autre: 'Autre' }[t.type] || t.type

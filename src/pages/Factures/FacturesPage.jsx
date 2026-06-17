@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useFactures } from '../../hooks/useFactures'
 import { useClients }  from '../../hooks/useClients'
 import { formatEuro, formatDate, formatStatut } from '../../utils/formatters'
+import { EmptyState } from '../../components/ui/EmptyState'
 import { estEnRetard, joursDeRetard } from '../../utils/calcFacture'
 import { BADGES } from '../../constants/theme'
 import FactureWizard from './FactureWizard'
@@ -114,10 +115,7 @@ export default function FacturesPage() {
         {loading ? (
           <div style={{ textAlign: 'center', padding: 48, color: '#6b7280' }}>Chargement…</div>
         ) : facturesFiltrees.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 64 }}>
-            <DescriptionIcon style={{ fontSize: 48, color: '#c8d3ee', marginBottom: 12 }} />
-            <p style={{ fontSize: 15, color: '#6b7280', margin: 0 }}>Aucune facture trouvée</p>
-          </div>
+          <EmptyState icon="🧾" title="Aucune facture" subtitle="Créez votre première facture pour commencer" action={{ label: '+ Nouvelle facture', onClick: () => navigate('/factures/new') }} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {facturesFiltrees.map(facture => (
