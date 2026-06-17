@@ -116,6 +116,7 @@ export default function DashboardPage() {
               value={formatEuro(caMois)}
               sub={evol !== null ? `${evol > 0 ? '+' : ''}${evol}% vs mois préc.` : 'Pas de comparatif'}
               subColor={evol > 0 ? '#16a34a' : evol < 0 ? '#dc2626' : '#6b7280'}
+              bg="#f0fdf4" accent="#16a34a" valueColor="#16a34a"
             />
           )}
           {afficherFactures && (
@@ -125,6 +126,7 @@ export default function DashboardPage() {
               sub={`${impayees.length} facture(s)`}
               subColor={impayees.length > 0 ? '#c2410c' : '#6b7280'}
               onClick={() => navigate('/factures')}
+              bg="#fff1f2" accent="#dc2626" valueColor="#dc2626"
             />
           )}
           <KPI
@@ -132,12 +134,14 @@ export default function DashboardPage() {
             value={chantiersEnCours.length}
             sub="actifs"
             onClick={() => navigate('/chantiers')}
+            bg="#eff6ff" accent="#0d3580" valueColor="#0d3580"
           />
           {afficherEquipe && (
             <KPI
               label="Ouvriers actifs"
               value={ouvrierActifs}
               sub="aujourd'hui"
+              bg="#f9fafb" accent="#6b7280" valueColor="#374151"
             />
           )}
         </div>
@@ -437,11 +441,20 @@ function TerrainLiveWidget({ chantiers, style }) {
   )
 }
 
-function KPI({ label, value, sub, subColor = '#6b7280', onClick }) {
+function KPI({ label, value, sub, subColor = '#6b7280', onClick, bg = '#FFFFFF', accent = '#0d3580', valueColor = '#0d3580' }) {
   return (
-    <div onClick={onClick} style={{ background: '#FFFFFF', borderRadius: 12, border: 'none', boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)', padding: '14px 16px', cursor: onClick ? 'pointer' : 'default' }}>
+    <div onClick={onClick} style={{
+      background: bg, borderRadius: 12, border: 'none',
+      boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)',
+      padding: '14px 16px', cursor: onClick ? 'pointer' : 'default',
+      borderLeft: `4px solid ${accent}`,
+      transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+    }}
+      onMouseEnter={e => { if (onClick) { e.currentTarget.style.boxShadow = '0 2px 8px rgba(13,53,128,0.12), 0 8px 24px rgba(13,53,128,0.10)'; e.currentTarget.style.transform = 'translateY(-2px)' } }}
+      onMouseLeave={e => { if (onClick) { e.currentTarget.style.boxShadow = '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)'; e.currentTarget.style.transform = 'none' } }}
+    >
       <p style={{ fontSize: FS.xs, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>{label}</p>
-      <p style={{ fontSize: FS.kpi, fontWeight: '700', color: '#0d3580', margin: '0 0 4px', lineHeight: 1 }}>{value}</p>
+      <p style={{ fontSize: FS.kpi, fontWeight: '700', color: valueColor, margin: '0 0 4px', lineHeight: 1 }}>{value}</p>
       <p style={{ fontSize: FS.xs, color: subColor, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>{sub}</p>
     </div>
   )
