@@ -11,6 +11,7 @@ import { formatEuro, formatTauxTVA, addDays } from '../../utils/formatters'
 import { generateFacturePDF, uploadAndGetPdfUrl } from '../../utils/pdfGenerator'
 import { envoyerEmailFacture, EMAILJS_FACTURE_CONFIGURE } from '../../utils/emailFacture'
 import { MENTION_AUTOLIQUIDATION } from '../../constants/tva'
+import { WizardStepper } from '../../components/ui/WizardStepper'
 import ArrowBackIcon  from '@mui/icons-material/ArrowBack'
 import AddIcon        from '@mui/icons-material/Add'
 import DeleteIcon     from '@mui/icons-material/Delete'
@@ -163,20 +164,15 @@ export default function FactureWizard({ onClose, mode = 'facture', devisSource =
         </div>
       </div>
 
-      {/* Stepper */}
-      <div style={{ display: 'flex', padding: '12px 24px', gap: 4, background: '#fff', borderBottom: '1px solid #e2e4ea' }}>
-        {ETAPES.map((nom, i) => (
-          <button key={i} onClick={() => i < etape && setEtape(i)} style={{
-            flex: 1, padding: '6px 4px', borderRadius: 6, border: 'none',
-            fontSize: 11, fontWeight: i === etape ? '600' : '400',
-            background: i === etape ? '#0d3580' : i < etape ? '#dcfce7' : '#F0F2F7',
-            color: i === etape ? '#fff' : i < etape ? '#16a34a' : '#6b7280',
-            cursor: i < etape ? 'pointer' : 'default',
-          }}>
-            {i < etape ? '✓ ' : ''}{nom}
-          </button>
-        ))}
-      </div>
+      <WizardStepper
+        currentStep={etape}
+        steps={[
+          { label: 'Client', subtitle: client?.nom },
+          { label: 'Lignes', subtitle: lignes.length > 0 ? `${lignes.length} ligne(s)` : undefined },
+          { label: 'Dates', subtitle: dateEcheance },
+          { label: 'Aperçu', subtitle: 'Vérifier' },
+        ]}
+      />
 
       <div style={{ padding: 24, maxWidth: 720, margin: '0 auto' }}>
         {etape === 0 && (
@@ -405,7 +401,7 @@ function EtapeApercu({ mode, client, chantier, lignesCalculees, totaux, tvaDonne
 // ─── Petits composants réutilisables ───
 function Card({ label, children, style }) {
   return (
-    <div style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '16px 18px', ...style }}>
+    <div style={{ background: '#FFFFFF', borderRadius: 14, border: 'none', boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)', padding: '16px 18px', ...style }}>
       <p style={{ fontSize: 11, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px' }}>{label}</p>
       {children}
     </div>
