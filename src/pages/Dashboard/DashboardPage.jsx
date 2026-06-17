@@ -21,6 +21,23 @@ import LocationOnIcon    from '@mui/icons-material/LocationOn'
 import ExpandMoreIcon    from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon    from '@mui/icons-material/ExpandLess'
 
+function AnimatedAmount({ value, duration = 800 }) {
+  const [display, setDisplay] = useState(0)
+  useEffect(() => {
+    let start = 0
+    const steps = 40
+    const increment = value / steps
+    const stepDuration = duration / steps
+    const timer = setInterval(() => {
+      start += increment
+      if (start >= value) { setDisplay(value); clearInterval(timer) }
+      else setDisplay(Math.round(start * 100) / 100)
+    }, stepDuration)
+    return () => clearInterval(timer)
+  }, [value, duration])
+  return <span>{formatEuro(display)}</span>
+}
+
 const FS = {
   xs:   'clamp(9px, 2.5vw, 11px)',
   sm:   'clamp(10px, 2.8vw, 12px)',
@@ -113,7 +130,7 @@ export default function DashboardPage() {
           {afficherCA && (
             <KPI
               label="CA ce mois (HT)"
-              value={formatEuro(caMois)}
+              value={<AnimatedAmount value={caMois} />}
               sub={evol !== null ? `${evol > 0 ? '+' : ''}${evol}% vs mois préc.` : 'Pas de comparatif'}
               subColor={evol > 0 ? '#16a34a' : evol < 0 ? '#dc2626' : '#6b7280'}
               bg="#f0fdf4" accent="#16a34a" valueColor="#16a34a"
@@ -122,7 +139,7 @@ export default function DashboardPage() {
           {afficherFactures && (
             <KPI
               label="Factures impayées"
-              value={formatEuro(impayees.reduce((s, f) => s + (f.solde || 0), 0))}
+              value={<AnimatedAmount value={impayees.reduce((s, f) => s + (f.solde || 0), 0)} />}
               sub={`${impayees.length} facture(s)`}
               subColor={impayees.length > 0 ? '#c2410c' : '#6b7280'}
               onClick={() => navigate('/factures')}
