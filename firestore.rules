@@ -28,7 +28,8 @@ service cloud.firestore {
     //          mise à jour restreinte : seul le patron peut tout changer,
     //          un user connecté peut uniquement marquer "accepte" (son inscription)
     match /invitations/{token} {
-      allow read:   if true
+      allow get:    if true          // lecture d'un token spécifique (page /rejoindre, pré-auth)
+      allow list:   if isPatron()    // M2 FIX — listing collection réservé au patron
       allow create: if isPatron()
       allow update: if isPatron()
         || (isAuth()
@@ -67,7 +68,8 @@ service cloud.firestore {
     }
 
     // POINTAGES
-    // I3 FIX — l'ouvrier ne peut modifier que heureFin/statut/coordsFin sur un pointage en cours
+    // I3 FIX — l'ouvrier ne peut modifier que les champs de fin de journée
+    //          bloqué : heureDebut, chantierId, ouvrierId, validePar, chantierAdresse
     match /pointages/{id} {
       allow create: if isAuth()
       allow read:   if request.auth.uid == resource.data.ouvrierId
@@ -76,7 +78,11 @@ service cloud.firestore {
         || (request.auth.uid == resource.data.ouvrierId
             && resource.data.statut == 'en_cours'
             && request.resource.data.diff(resource.data)
-                .affectedKeys().hasOnly(['heureFin', 'statut', 'coordsFin', 'heuresTravaillees'])
+                .affectedKeys().hasOnly([
+                  'heureFin', 'statut', 'coordsFin', 'heuresTravaillees',
+                  'pause', 'tracesGPS', 'heuresNormales',
+                  'heuresSupp25', 'heuresSupp50', 'heuresSupp', 'updatedAt'
+                ])
             && request.resource.data.statut in ['en_cours', 'a_verifier'])
       allow delete: if false
     }

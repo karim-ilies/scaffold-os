@@ -1,5 +1,6 @@
 import {
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth'
@@ -22,6 +23,10 @@ export async function loginWithEmail(email, password) {
 
 export async function logout() {
   await signOut(auth)
+}
+
+export async function resetPassword(email) {
+  await sendPasswordResetEmail(auth, email)
 }
 
 export async function getCurrentUserProfile(uid) {

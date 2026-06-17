@@ -6,6 +6,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage, STORAGE_ENABLED } from '../../firebase/config'
 import { useModal } from '../../context/ModalContext'
 import { usePersonnel, dechiffrer } from '../../hooks/usePersonnel'
+import { resetPassword } from '../../firebase/auth'
 import { formatDate, formatEuro } from '../../utils/formatters'
 import { BADGES } from '../../constants/theme'
 import ArrowBackIcon        from '@mui/icons-material/ArrowBack'
@@ -20,6 +21,7 @@ import WarningIcon          from '@mui/icons-material/Warning'
 import PersonIcon           from '@mui/icons-material/Person'
 import CloseIcon            from '@mui/icons-material/Close'
 import EmojiEventsIcon      from '@mui/icons-material/EmojiEvents'
+import LockResetIcon        from '@mui/icons-material/LockReset'
 
 export default function PersonnelDetail() {
   const { id }          = useParams()
@@ -371,6 +373,34 @@ export default function PersonnelDetail() {
                   <div>
                     <p style={{ fontSize: 14, fontWeight: '600', color: '#111111', margin: 0 }}>Voir les fiches mensuelles</p>
                     <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>Bulletins de paie et historique</p>
+                  </div>
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!ouvrier.email) {
+                      await showModal({ type: 'info', title: 'Pas d\'email', message: 'Cet ouvrier n\'a pas d\'adresse email enregistrée.' })
+                      return
+                    }
+                    const ok = await showModal({
+                      type: 'confirm',
+                      title: 'Réinitialiser le mot de passe ?',
+                      message: `Un email sera envoyé à ${ouvrier.email} avec un lien de réinitialisation.`,
+                      confirmLabel: 'Envoyer',
+                    })
+                    if (!ok) return
+                    try {
+                      await resetPassword(ouvrier.email)
+                      await showModal({ type: 'info', title: 'Email envoyé !', message: `Un lien de réinitialisation a été envoyé à ${ouvrier.email}.` })
+                    } catch {
+                      await showModal({ type: 'info', title: 'Erreur', message: 'Impossible d\'envoyer l\'email. Vérifiez l\'adresse.' })
+                    }
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#f3f4f6', border: 'none', borderRadius: 10, padding: '14px 16px', cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <LockResetIcon style={{ fontSize: 22, color: '#d97706' }} />
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: '600', color: '#111111', margin: 0 }}>Réinitialiser le mot de passe</p>
+                    <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>Envoie un email de réinitialisation à l'ouvrier</p>
                   </div>
                 </button>
                 <button onClick={handleToggleActif} style={{ display: 'flex', alignItems: 'center', gap: 10, background: ouvrier.actif ? '#fee2e2' : '#dcfce7', border: 'none', borderRadius: 10, padding: '14px 16px', cursor: 'pointer', textAlign: 'left' }}>

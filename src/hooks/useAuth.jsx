@@ -16,10 +16,24 @@ export function AuthProvider({ children }) {
       if (unsubProfile) { unsubProfile(); unsubProfile = null }
 
       if (firebaseUser) {
+        const [authPrenom, ...authNomParts] = (firebaseUser.displayName || '').split(' ')
+        const authNom = authNomParts.join(' ')
+
         unsubProfile = onSnapshot(
           doc(db, 'users', firebaseUser.uid),
           (snap) => {
-            setUser(snap.exists() ? { uid: firebaseUser.uid, ...snap.data() } : null)
+            if (snap.exists()) {
+              const data = snap.data()
+              setUser({
+                uid: firebaseUser.uid,
+                ...data,
+                prenom: data.prenom || authPrenom || firebaseUser.email?.split('@')[0] || '',
+                nom:    data.nom    || authNom    || '',
+                email:  data.email  || firebaseUser.email,
+              })
+            } else {
+              setUser(null)
+            }
             setLoading(false)
           },
           () => { setUser(null); setLoading(false) }

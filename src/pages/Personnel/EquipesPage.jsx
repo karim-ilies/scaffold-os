@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useEquipes }   from '../../hooks/useEquipes'
 import { usePersonnel } from '../../hooks/usePersonnel'
+import { useModal }     from '../../context/ModalContext'
 import CloseIcon  from '@mui/icons-material/Close'
 import EditIcon   from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -9,11 +10,20 @@ import GroupsIcon from '@mui/icons-material/Groups'
 export default function EquipesPage() {
   const { equipes, loading, creerEquipe, modifierEquipe, supprimerEquipe } = useEquipes()
   const { personnel } = usePersonnel()
+  const { showModal } = useModal()
   const [modal, setModal] = useState(null) // null | 'new' | equipe obj
 
-  const actifs   = personnel.filter(p => p.actif !== false)
-  const chefs    = actifs
-  const ouvriers = actifs
+  const actifs = personnel.filter(p => p.actif !== false)
+
+  function getDisponibles(editingEquipe) {
+    const prises = new Set()
+    equipes.forEach(eq => {
+      if (editingEquipe && eq.id === editingEquipe.id) return
+      prises.add(eq.chefUid)
+      ;(eq.ouvrierUids || []).forEach(uid => prises.add(uid))
+    })
+    return actifs.filter(p => !prises.has(p.id))
+  }
 
   function nomComplet(uid) {
     const p = personnel.find(x => x.id === uid)
@@ -97,19 +107,56 @@ export default function EquipesPage() {
         })}
       </div>
 
-      {modal !== null && (
-        <ModalEquipe
-          equipe={modal === 'new' ? null : modal}
-          chefs={chefs}
-          ouvriers={ouvriers}
-          onClose={() => setModal(null)}
-          onSave={async (data) => {
-            if (modal === 'new') await creerEquipe(data)
-            else await modifierEquipe(modal.id, data)
-            setModal(null)
-          }}
-        />
-      )}
+      {modal !== null && (() => {
+        const editEq = modal === 'new' ? null : modal
+        const disponibles = getDisponibles(editEq)
+        return (
+          <ModalEquipe
+            equipe={editEq}
+            chefs={disponibles}
+            ouvriers={disponibles}
+            onClose={() => setModal(null)}
+            onSave={async (data) => {
+              if (!data.nom?.trim()) {
+                await showModal({ type: 'info', title: 'Information manquante', message: 'Il manque le nom de l\'équipe.' })
+                return
+              }
+              if (!data.chefUid) {
+                await showModal({ type: 'info', title: 'Information manquante', message: 'Il manque le chef d\'équipe.' })
+                return
+              }
+              if (!data.ouvrierUids || data.ouvrierUids.length === 0) {
+                await showModal({ type: 'info', title: 'Information manquante', message: 'Sélectionnez au moins un ouvrier pour l\'équipe.' })
+                return
+              }
+              const nomExiste = equipes.some(eq => eq.nom.toLowerCase().trim() === data.nom.toLowerCase().trim() && (!editEq || eq.id !== editEq.id))
+              if (nomExiste) {
+                await showModal({ type: 'info', title: 'Nom déjà utilisé', message: `Une équipe "${data.nom.trim()}" existe déjà. Choisissez un autre nom.` })
+                return
+              }
+              const tousUids = [data.chefUid, ...data.ouvrierUids]
+              const doublons = []
+              for (const uid of tousUids) {
+                for (const eq of equipes) {
+                  if (editEq && eq.id === editEq.id) continue
+                  const membresEq = [eq.chefUid, ...(eq.ouvrierUids || [])]
+                  if (membresEq.includes(uid)) {
+                    const p = personnel.find(x => x.id === uid)
+                    doublons.push(`${p?.prenom || '?'} ${p?.nom || '?'} est déjà dans l'équipe "${eq.nom}"`)
+                  }
+                }
+              }
+              if (doublons.length > 0) {
+                await showModal({ type: 'info', title: 'Ouvrier(s) déjà affecté(s)', message: doublons.join('\n') })
+                return
+              }
+              if (modal === 'new') await creerEquipe(data)
+              else await modifierEquipe(modal.id, data)
+              setModal(null)
+            }}
+          />
+        )
+      })()}
     </div>
   )
 }
@@ -129,7 +176,6 @@ function ModalEquipe({ equipe, chefs, ouvriers, onClose, onSave }) {
   }
 
   async function handleSave() {
-    if (!nom.trim() || !chefUid) return
     setSaving(true)
     await onSave({ nom: nom.trim(), chefUid, ouvrierUids: [...selection] })
     setSaving(false)
@@ -197,8 +243,8 @@ function ModalEquipe({ equipe, chefs, ouvriers, onClose, onSave }) {
           </button>
           <button
             onClick={handleSave}
-            disabled={saving || !nom.trim() || !chefUid}
-            style={{ flex: 2, background: '#0d3580', color: '#fff', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, fontWeight: '700', cursor: 'pointer', opacity: (!nom.trim() || !chefUid) ? 0.5 : 1 }}
+            disabled={saving}
+            style={{ flex: 2, background: '#0d3580', color: '#fff', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, fontWeight: '700', cursor: saving ? 'not-allowed' : 'pointer' }}
           >
             {saving ? 'Sauvegarde…' : equipe ? 'Enregistrer' : 'Créer l\'équipe'}
           </button>

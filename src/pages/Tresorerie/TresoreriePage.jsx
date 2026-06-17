@@ -73,13 +73,14 @@ export default function TresoreriePage() {
   // Graphique 6 mois
   const graphData = useMemo(() => {
     const now = new Date()
+    const curMois = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     return Array.from({ length: 6 }, (_, i) => {
       const d  = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
-      const mois = d.toISOString().slice(0, 7)
+      const mois = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       const label = d.toLocaleDateString('fr-FR', { month: 'short' })
       const enc = mouvements.filter(m => m.type === 'encaissement' && m.date?.startsWith(mois)).reduce((s, m) => s + m.montant, 0)
       const dec = mouvements.filter(m => m.type === 'decaissement' && m.date?.startsWith(mois)).reduce((s, m) => s + m.montant, 0)
-      return { mois, label, solde: enc - dec, enc, dec, isCurrent: mois === now.toISOString().slice(0, 7) }
+      return { mois, label, solde: enc - dec, enc, dec, isCurrent: mois === curMois }
     })
   }, [mouvements])
 

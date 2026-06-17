@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { loginWithEmail } from '../../firebase/auth'
+import { loginWithEmail, resetPassword } from '../../firebase/auth'
 import ConstructionIcon from '@mui/icons-material/Construction'
 import EmailIcon        from '@mui/icons-material/Email'
 import LockIcon         from '@mui/icons-material/Lock'
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
+  const [resetMsg, setResetMsg] = useState('')
   const navigate = useNavigate()
 
   async function handleSubmit(e) {
@@ -140,6 +141,37 @@ export default function LoginPage() {
             >
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
+
+            <button
+              type="button"
+              onClick={async () => {
+                setError(''); setResetMsg('')
+                if (!email) { setError('Entrez votre email pour réinitialiser.'); return }
+                try {
+                  await resetPassword(email)
+                  setResetMsg('Un email de réinitialisation a été envoyé.')
+                } catch {
+                  setError('Impossible d\'envoyer l\'email. Vérifiez l\'adresse.')
+                }
+              }}
+              style={{
+                width: '100%', marginTop: 10, background: 'transparent',
+                color: '#0d3580', border: 'none', fontSize: 13,
+                cursor: 'pointer', textDecoration: 'underline',
+              }}
+            >
+              Mot de passe oublié ?
+            </button>
+
+            {resetMsg && (
+              <div style={{
+                background: '#dcfce7', border: '1px solid #86efac',
+                borderRadius: 8, padding: '10px 14px', marginTop: 12,
+                fontSize: 13, color: '#16a34a',
+              }}>
+                {resetMsg}
+              </div>
+            )}
           </div>
         </form>
 

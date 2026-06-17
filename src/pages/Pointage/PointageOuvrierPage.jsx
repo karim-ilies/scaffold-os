@@ -6,6 +6,12 @@ import { STORAGE_ENABLED } from '../../firebase/config'
 import { useAuth }         from '../../hooks/useAuth'
 import { usePointage }     from '../../hooks/usePointage'
 import { useChantiers }    from '../../hooks/useChantiers'
+import { usePlanning }     from '../../hooks/usePlanning'
+import CalendarTodayIcon   from '@mui/icons-material/CalendarToday'
+import ConstructionIcon    from '@mui/icons-material/Construction'
+import PersonIcon          from '@mui/icons-material/Person'
+import GroupIcon           from '@mui/icons-material/Group'
+import CloseIcon           from '@mui/icons-material/Close'
 import { getCurrentPosition, demarrerTraceGPS } from '../../utils/gps'
 import { sauvegarderOffline, syncPendingPointages, getPendingPointages } from '../../utils/offlineSync'
 import { formatHeures, formatDate, formatStatut, dateToString } from '../../utils/formatters'
@@ -38,6 +44,17 @@ export default function PointageOuvrierPage() {
   const pointageAujourdhui = pointages.find(p => p.ouvrierId === user?.uid && p.date === today)
   const enCours = pointageAujourdhui?.statut === 'en_cours'
 
+  // Planning semaine
+  const lundi = (() => {
+    const d = new Date()
+    const day = d.getDay() || 7
+    d.setDate(d.getDate() - day + 1)
+    return d
+  })()
+  const dateDebut = dateToString(lundi)
+  const dateFin   = dateToString(new Date(lundi.getTime() + 5 * 86400000))
+  const { planning: maSemaine, loading: planLoading } = usePlanning({ ouvrierUid: user?.uid, dateDebut, dateFin })
+
   const [chantierId, setChantierId] = useState('')
   const [heureDebut, setHeureDebut] = useState(heureActuelle())
   const [heureFin,   setHeureFin]   = useState(heureActuelle())
@@ -48,6 +65,7 @@ export default function PointageOuvrierPage() {
   const [saving,     setSaving]     = useState(false)
   const [erreur,     setErreur]     = useState(null)
   const [isOffline,  setIsOffline]  = useState(!navigator.onLine)
+  const [planDetail, setPlanDetail] = useState(null)
   const [pendingCount, setPendingCount] = useState(getPendingPointages().length)
   const intervalRef = useRef(null)
   const traceRef    = useRef(null)
@@ -247,6 +265,94 @@ export default function PointageOuvrierPage() {
                 <CheckCircleIcon style={{ fontSize: 48, color: '#16a34a', marginBottom: 8 }} />
                 <p style={{ fontSize: 16, fontWeight: '600', color: '#111111', margin: '0 0 4px' }}>Journée terminée</p>
                 <p style={{ fontSize: 13, color: '#6b7280', margin: 0 }}>{formatHeures(pointageAujourdhui.heuresTravaillees)} — {formatStatut(pointageAujourdhui.statut)}</p>
+              </div>
+            )}
+
+            {/* Widget planning semaine */}
+            {!planLoading && maSemaine.length > 0 && (
+              <div style={{ background: '#FFFFFF', borderRadius: 14, border: '1.5px solid #0d3580', padding: '14px 16px', marginTop: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                  <CalendarTodayIcon style={{ fontSize: 16, color: '#0d3580' }} />
+                  <p style={{ fontSize: 11, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>Mon planning semaine</p>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 4 }}>
+                  {Array.from({ length: 6 }, (_, i) => {
+                    const d = new Date(lundi.getTime() + i * 86400000)
+                    const iso = dateToString(d)
+                    const aff = maSemaine.find(p => p.date === iso)
+                    const isToday = iso === today
+                    const isSelected = planDetail?.date === iso
+                    const jourLabel = d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '')
+                    const jourNum   = d.getDate()
+                    return (
+                      <div key={i}
+                        onClick={() => aff && setPlanDetail(isSelected ? null : { ...aff, dateObj: d })}
+                        style={{
+                          borderRadius: 8, padding: '6px 4px', textAlign: 'center',
+                          background: isToday ? '#0d3580' : aff ? '#e8edf8' : '#f9fafb',
+                          border: isSelected ? '2px solid #E8A838' : isToday ? 'none' : '1px solid #e2e4ea',
+                          cursor: aff ? 'pointer' : 'default',
+                          transition: 'transform 0.1s',
+                          transform: isSelected ? 'scale(1.05)' : 'none',
+                        }}>
+                        <p style={{ fontSize: 9, fontWeight: '600', color: isToday ? 'rgba(255,255,255,0.7)' : '#9ca3af', margin: 0, textTransform: 'capitalize' }}>{jourLabel}</p>
+                        <p style={{ fontSize: 14, fontWeight: '700', color: isToday ? '#fff' : '#111111', margin: '2px 0' }}>{jourNum}</p>
+                        {aff ? (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                            <ConstructionIcon style={{ fontSize: 9, color: isToday ? '#E8A838' : '#0d3580' }} />
+                            <p style={{ fontSize: 8, fontWeight: '600', color: isToday ? '#E8A838' : '#0d3580', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 50 }}>
+                              {aff.chantierNom}
+                            </p>
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: 8, color: isToday ? 'rgba(255,255,255,0.4)' : '#d1d5db', margin: 0 }}>—</p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Détail jour sélectionné */}
+                {planDetail && (
+                  <div style={{ marginTop: 10, background: '#f8faff', borderRadius: 10, border: '1px solid #c8d3ee', padding: '12px 14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <p style={{ fontSize: 13, fontWeight: '700', color: '#0d3580', margin: 0, textTransform: 'capitalize' }}>
+                        {planDetail.dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                      </p>
+                      <button onClick={() => setPlanDetail(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex' }}>
+                        <CloseIcon style={{ fontSize: 16, color: '#9ca3af' }} />
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <ConstructionIcon style={{ fontSize: 18, color: '#0d3580', flexShrink: 0 }} />
+                      <div>
+                        <p style={{ fontSize: 14, fontWeight: '600', color: '#111111', margin: 0 }}>{planDetail.chantierNom}</p>
+                      </div>
+                    </div>
+
+                    {planDetail.chantierAdresse && (
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                        <LocationOnIcon style={{ fontSize: 16, color: '#6b7280', flexShrink: 0, marginTop: 1 }} />
+                        <p style={{ fontSize: 12, color: '#374151', margin: 0, lineHeight: 1.4 }}>{planDetail.chantierAdresse}</p>
+                      </div>
+                    )}
+
+                    {planDetail.chefNom && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <PersonIcon style={{ fontSize: 16, color: '#6b7280', flexShrink: 0 }} />
+                        <p style={{ fontSize: 12, color: '#374151', margin: 0 }}>Chef : <strong>{planDetail.chefNom}</strong></p>
+                      </div>
+                    )}
+
+                    {planDetail.coequipiers && (
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                        <GroupIcon style={{ fontSize: 16, color: '#6b7280', flexShrink: 0, marginTop: 1 }} />
+                        <p style={{ fontSize: 12, color: '#374151', margin: 0, lineHeight: 1.4 }}>Coéquipiers : {planDetail.coequipiers}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </>
