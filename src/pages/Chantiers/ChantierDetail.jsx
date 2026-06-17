@@ -5,6 +5,7 @@ import { db } from '../../firebase/config'
 import { formatDate, formatStatut, formatHeures } from '../../utils/formatters'
 import { BADGES } from '../../constants/theme'
 import { useChantiers } from '../../hooks/useChantiers'
+import { usePersonnel } from '../../hooks/usePersonnel'
 import { useResponsive } from '../../hooks/useResponsive'
 import { useAuth } from '../../hooks/useAuth'
 import TabMateriel from './TabMateriel'
@@ -29,6 +30,9 @@ export default function ChantierDetail() {
   const { mettreAJourChantier } = useChantiers()
   const { parametres } = useParametres()
   const { showModal }  = useModal()
+
+  const { personnel } = usePersonnel()
+  const nomOuvrier = (uid) => { const o = personnel.find(p => p.id === uid); return o ? `${o.prenom} ${o.nom}` : uid?.slice(0, 8) + '…' }
 
   const [chantier,  setChantier]  = useState(null)
   const [client,    setClient]    = useState(null)
@@ -213,7 +217,7 @@ export default function ChantierDetail() {
                       return (
                         <tr key={p.id}>
                           <td style={tdS}>{p.date}</td>
-                          <td style={tdS}>{p.ouvrierId}</td>
+                          <td style={tdS}>{nomOuvrier(p.ouvrierId)}</td>
                           <td style={tdS}>{formatHeures(p.heuresTravaillees)}</td>
                           <td style={tdS}><span style={{ fontSize: 11, fontWeight: '600', padding: '2px 8px', borderRadius: 20, ...b }}>{formatStatut(p.statut)}</span></td>
                         </tr>

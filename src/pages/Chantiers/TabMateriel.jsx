@@ -122,8 +122,8 @@ export default function TabMateriel({ chantierId, chantierNom, isPatron }) {
 
       {/* Modal nouvelle demande */}
       {modalOuvert && (
-        <div onClick={e => { if (e.target === e.currentTarget) setModalOuvert(false) }} style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 0 }}>
-          <div style={{ background: '#fff', borderRadius: '20px 20px 0 0', padding: 24, width: '100%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 -8px 40px rgba(0,0,0,0.2)' }}>
+        <div onClick={e => { if (e.target === e.currentTarget) setModalOuvert(false) }} style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: '#fff', borderRadius: 16, padding: 24, width: '100%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
               <h2 style={{ fontSize: 16, fontWeight: '700', color: '#111111', margin: 0 }}>Signaler du matériel manquant</h2>
               <button onClick={() => setModalOuvert(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
