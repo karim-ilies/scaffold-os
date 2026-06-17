@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { doc, getDoc, collection, query, where, orderBy, getDocs } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, collection, query, where, orderBy, getDocs, serverTimestamp } from 'firebase/firestore'
 import { db } from '../../firebase/config'
 import { formatDate, formatStatut, formatHeures } from '../../utils/formatters'
 import { BADGES } from '../../constants/theme'
@@ -196,8 +196,7 @@ export default function ChantierDetail() {
                   onChange={async (e) => {
                     const val = parseInt(e.target.value)
                     setChantier(prev => ({ ...prev, avancement: val }))
-                    const { updateDoc, doc: docRef, serverTimestamp } = await import('firebase/firestore')
-                    await updateDoc(docRef(db, 'chantiers', id), { avancement: val, updatedAt: serverTimestamp() })
+                    await updateDoc(doc(db, 'chantiers', id), { avancement: val, updatedAt: serverTimestamp() })
                   }}
                   style={{ width: '100%', marginTop: 10, accentColor: '#0d3580' }}
                 />

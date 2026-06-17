@@ -12,6 +12,9 @@ import { formatEuro, formatDate, dateToString } from '../../utils/formatters'
 import { estEnRetard, joursDeRetard } from '../../utils/calcFacture'
 import { BADGES }        from '../../constants/theme'
 import Skeleton, { SkeletonCard } from '../../components/ui/Skeleton'
+import { TresorerieChart } from '../../components/ui/charts/TresorerieChart'
+import { CAParClientChart } from '../../components/ui/charts/CAParClientChart'
+import { useResponsive } from '../../hooks/useResponsive'
 import TrendingUpIcon    from '@mui/icons-material/TrendingUp'
 import WarningIcon       from '@mui/icons-material/Warning'
 import ConstructionIcon  from '@mui/icons-material/Construction'
@@ -106,7 +109,33 @@ export default function DashboardPage() {
   const enRetard    = useMemo(() => factures.filter(estEnRetard), [factures])
   const alertesStock = useMemo(() => stock.filter(s => s.quantiteDisponible < s.quantiteMin), [stock])
 
+  const { isMobile } = useResponsive()
   const chantiersEnCours = chantiers.filter(c => c.statut === 'en_cours')
+
+  const tresorerieData = useMemo(() => {
+    const now = new Date()
+    return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+      const mois = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const label = d.toLocaleDateString('fr-FR', { month: 'short' })
+      const fMois = factures.filter(f => {
+        const fd = f.dateEmission?.toDate ? f.dateEmission.toDate() : f.dateEmission ? new Date(f.dateEmission) : null
+        return fd && fd.toISOString().slice(0, 7) === mois && f.statut !== 'annulee'
+      })
+      const enc = fMois.filter(f => f.statut === 'payee' || f.statut === 'paye').reduce((s, f) => s + (f.totalTTC || 0), 0)
+      const dec = fMois.reduce((s, f) => s + ((f.totalTTC || 0) - (f.solde || 0)), 0) * 0.6
+      return { mois: label, encaisse: Math.round(enc), decaisse: Math.round(dec) }
+    })
+  }, [factures])
+
+  const caParClientData = useMemo(() => {
+    const map = {}
+    factures.filter(f => f.statut !== 'annulee' && f.statut !== 'brouillon').forEach(f => {
+      const nom = f.clientNom || f.clientId?.slice(0, 8) || '—'
+      map[nom] = (map[nom] || 0) + (f.totalHT || 0)
+    })
+    return Object.entries(map).map(([nom, ca]) => ({ nom, ca })).sort((a, b) => b.ca - a.ca).slice(0, 6)
+  }, [factures])
   const ouvrierActifs    = [...new Set(pointagesJ.filter(p => p.statut === 'en_cours').map(p => p.ouvrierId))].length
 
   if (loading) return (
@@ -224,6 +253,14 @@ export default function DashboardPage() {
               </div>
             ))}
           </Section>
+        )}
+
+        {/* Graphiques — desktop uniquement */}
+        {!isMobile && afficherCA && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
+            <TresorerieChart data={tresorerieData} />
+            <CAParClientChart data={caParClientData} />
+          </div>
         )}
 
         {/* Terrain en direct — patron et chef */}
