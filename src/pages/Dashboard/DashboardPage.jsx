@@ -4,6 +4,7 @@ import { collection, query, orderBy, limit, getDocs, where, onSnapshot } from 'f
 import { db } from '../../firebase/config'
 import { useAuth }      from '../../hooks/useAuth'
 import { useChantiers } from '../../hooks/useChantiers'
+import { useClients }  from '../../hooks/useClients'
 import { useStock }     from '../../hooks/useStock'
 import { usePlanning }  from '../../hooks/usePlanning'
 import { useDemandesMateriel } from '../../hooks/useDemandesMateriel'
@@ -58,6 +59,7 @@ const moisPrev = (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); re
 export default function DashboardPage() {
   const { user, role, isPatron, isComptable, isChefEquipe } = useAuth()
   const { chantiers }  = useChantiers()
+  const { clients }    = useClients(isPatron || isComptable)
   const { stock }      = useStock({}, isPatron)
   const navigate       = useNavigate()
 
@@ -128,14 +130,16 @@ export default function DashboardPage() {
     })
   }, [factures])
 
+  const clientMap = useMemo(() => Object.fromEntries(clients.map(c => [c.id, c])), [clients])
+
   const caParClientData = useMemo(() => {
     const map = {}
     factures.filter(f => f.statut !== 'annulee' && f.statut !== 'brouillon').forEach(f => {
-      const nom = f.clientNom || f.clientId?.slice(0, 8) || '—'
+      const nom = clientMap[f.clientId]?.nom || f.clientId?.slice(0, 8) || '—'
       map[nom] = (map[nom] || 0) + (f.totalHT || 0)
     })
     return Object.entries(map).map(([nom, ca]) => ({ nom, ca })).sort((a, b) => b.ca - a.ca).slice(0, 6)
-  }, [factures])
+  }, [factures, clientMap])
   const ouvrierActifs    = [...new Set(pointagesJ.filter(p => p.statut === 'en_cours').map(p => p.ouvrierId))].length
 
   if (loading) return (

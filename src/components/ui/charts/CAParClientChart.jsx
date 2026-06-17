@@ -14,7 +14,7 @@ export function CAParClientChart({ data }) {
           <Pie data={data} cx="50%" cy="50%" outerRadius={75} innerRadius={40} dataKey="ca" nameKey="nom" labelLine={false}>
             {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
           </Pie>
-          <Tooltip formatter={v => formatEuro(v)} contentStyle={{ background: '#1c1c1e', border: 'none', borderRadius: 10, fontSize: 12, color: '#fff' }} />
+          <Tooltip formatter={v => formatEuro(v)} contentStyle={{ background: '#1c1c1e', border: 'none', borderRadius: 10, fontSize: 12 }} itemStyle={{ color: '#fff' }} labelStyle={{ color: 'rgba(255,255,255,0.6)' }} />
           <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ fontSize: 11, color: '#6b7280' }}>{v}</span>} />
         </PieChart>
       </ResponsiveContainer>
