@@ -4,6 +4,7 @@ import { useChantiers } from '../../hooks/useChantiers'
 import { useClients }   from '../../hooks/useClients'
 import { formatDate, formatStatut } from '../../utils/formatters'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { PageHeader } from '../../components/ui/PageHeader'
 import { BADGES } from '../../constants/theme'
 import ChantierForm from './ChantierForm'
 import AddIcon            from '@mui/icons-material/Add'
@@ -40,17 +41,11 @@ export default function ChantiersPage() {
 
   return (
     <div style={{ background: '#F7F8FA', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      <div style={{ background: '#0d3580', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: '700', color: '#fff', margin: 0 }}>Chantiers</h1>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '2px 0 0' }}>{chantiers.length} chantier{chantiers.length !== 1 ? 's' : ''}</p>
-        </div>
-        {isPatron && (
-          <button onClick={() => setFormOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#E8A838', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: '600', cursor: 'pointer' }}>
-            <AddIcon style={{ fontSize: 18 }} />Nouveau chantier
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Chantiers"
+        subtitle={`${chantiers.length} chantier${chantiers.length !== 1 ? 's' : ''}`}
+        action={isPatron ? { label: '+ Nouveau chantier', onClick: () => setFormOpen(true) } : undefined}
+      />
 
       <div style={{ padding: '12px 16px', display: 'flex', gap: 8, alignItems: 'center' }}>
         <div style={{ flex: 1, position: 'relative' }}>

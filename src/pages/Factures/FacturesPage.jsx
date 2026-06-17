@@ -4,6 +4,7 @@ import { useFactures } from '../../hooks/useFactures'
 import { useClients }  from '../../hooks/useClients'
 import { formatEuro, formatDate, formatStatut } from '../../utils/formatters'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { PageHeader } from '../../components/ui/PageHeader'
 import { estEnRetard, joursDeRetard } from '../../utils/calcFacture'
 import { BADGES } from '../../constants/theme'
 import FactureWizard from './FactureWizard'
@@ -50,20 +51,11 @@ export default function FacturesPage() {
 
   return (
     <div style={{ background: '#F7F8FA', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      {/* Header */}
-      <div style={{ background: '#0d3580', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: '700', color: '#ffffff', margin: 0 }}>Factures</h1>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '2px 0 0' }}>{factures.length} facture{factures.length !== 1 ? 's' : ''}</p>
-        </div>
-        <button
-          onClick={() => setWizardOpen(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#E8A838', color: '#ffffff', border: 'none', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: '600', cursor: 'pointer' }}
-        >
-          <AddIcon style={{ fontSize: 18 }} />
-          Nouvelle facture
-        </button>
-      </div>
+      <PageHeader
+        title="Factures"
+        subtitle={`${factures.length} facture${factures.length !== 1 ? 's' : ''}`}
+        action={{ label: '+ Nouvelle facture', onClick: () => setWizardOpen(true) }}
+      />
 
       {/* Onglets Actives / Archives */}
       <div style={{ padding: '12px 24px 0', display: 'flex', gap: 4, borderBottom: '1px solid #e2e4ea', background: '#FFFFFF' }}>

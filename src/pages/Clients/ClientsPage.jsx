@@ -4,6 +4,7 @@ import { useClients }  from '../../hooks/useClients'
 import { formatEuro }  from '../../utils/formatters'
 import { useResponsive } from '../../hooks/useResponsive'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { PageHeader } from '../../components/ui/PageHeader'
 import AddIcon          from '@mui/icons-material/Add'
 import SearchIcon       from '@mui/icons-material/Search'
 import PersonIcon       from '@mui/icons-material/Person'
@@ -32,18 +33,13 @@ export default function ClientsPage() {
 
   return (
     <div style={{ background: '#F7F8FA', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      {/* Header */}
-      <div style={{ background: '#0d3580', padding: '20px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div>
-            <h1 style={{ fontSize: 20, fontWeight: '700', color: '#fff', margin: 0 }}>Clients</h1>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '2px 0 0' }}>{clients.filter(c => c.actif !== false).length} clients actifs</p>
-          </div>
-          <button onClick={() => setCreate(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#E8A838', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 14px', fontSize: 13, fontWeight: '600', cursor: 'pointer' }}>
-            <AddIcon style={{ fontSize: 18 }} />Nouveau
-          </button>
-        </div>
+      <PageHeader
+        title="Clients"
+        subtitle={`${clients.filter(c => c.actif !== false).length} clients actifs`}
+        action={{ label: '+ Nouveau client', onClick: () => setCreate(true) }}
+      />
 
+      <div style={{ background: '#0d3580', padding: '0 24px 16px' }}>
         {/* Barre recherche */}
         <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px' }}>
           <SearchIcon style={{ fontSize: 18, color: 'rgba(255,255,255,0.5)' }} />
