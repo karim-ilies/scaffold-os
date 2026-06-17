@@ -11,6 +11,7 @@ import WarningAmberIcon  from '@mui/icons-material/WarningAmber'
 import { formatEuro, formatDate, dateToString } from '../../utils/formatters'
 import { estEnRetard, joursDeRetard } from '../../utils/calcFacture'
 import { BADGES }        from '../../constants/theme'
+import Skeleton, { SkeletonCard } from '../../components/ui/Skeleton'
 import TrendingUpIcon    from '@mui/icons-material/TrendingUp'
 import WarningIcon       from '@mui/icons-material/Warning'
 import ConstructionIcon  from '@mui/icons-material/Construction'
@@ -108,7 +109,20 @@ export default function DashboardPage() {
   const chantiersEnCours = chantiers.filter(c => c.statut === 'en_cours')
   const ouvrierActifs    = [...new Set(pointagesJ.filter(p => p.statut === 'en_cours').map(p => p.ouvrierId))].length
 
-  if (loading) return <div style={{ padding: 48, textAlign: 'center', color: '#6b7280' }}>Chargement…</div>
+  if (loading) return (
+    <div style={{ background: '#F7F8FA', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <div style={{ background: '#0d3580', padding: '20px 24px' }}>
+        <Skeleton width="200px" height="24px" borderRadius="8px" style={{ background: 'rgba(255,255,255,0.15)' }} />
+        <Skeleton width="100px" height="14px" borderRadius="6px" style={{ marginTop: 8, background: 'rgba(255,255,255,0.1)' }} />
+      </div>
+      <div style={{ padding: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 20 }}>
+          <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+        </div>
+        <SkeletonCard height={200} />
+      </div>
+    </div>
+  )
 
   const afficherCA      = isPatron || isComptable
   const afficherFactures = isPatron || isComptable
