@@ -266,7 +266,7 @@ function MonPlanningWidget({ userId, style }) {
   const sorted = [...planning].sort((a, b) => a.date.localeCompare(b.date))
 
   return (
-    <div style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '14px 16px', ...style }}>
+    <div style={{ background: '#FFFFFF', borderRadius: 12, border: 'none', boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)', padding: '14px 16px', ...style }}>
       <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: '0 0 10px' }}>Mon planning</p>
 
       {sorted.length === 0 ? (
@@ -367,7 +367,7 @@ function TerrainLiveWidget({ chantiers, style }) {
   if (actifs.length === 0) return null
 
   return (
-    <div style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '14px 16px', ...style }}>
+    <div style={{ background: '#FFFFFF', borderRadius: 12, border: 'none', boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)', padding: '14px 16px', ...style }}>
       <style>{`@keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.35} }`}</style>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -439,7 +439,7 @@ function TerrainLiveWidget({ chantiers, style }) {
 
 function KPI({ label, value, sub, subColor = '#6b7280', onClick }) {
   return (
-    <div onClick={onClick} style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '14px 16px', cursor: onClick ? 'pointer' : 'default' }}>
+    <div onClick={onClick} style={{ background: '#FFFFFF', borderRadius: 12, border: 'none', boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)', padding: '14px 16px', cursor: onClick ? 'pointer' : 'default' }}>
       <p style={{ fontSize: FS.xs, fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>{label}</p>
       <p style={{ fontSize: FS.kpi, fontWeight: '700', color: '#0d3580', margin: '0 0 4px', lineHeight: 1 }}>{value}</p>
       <p style={{ fontSize: FS.xs, color: subColor, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>{sub}</p>
@@ -449,7 +449,7 @@ function KPI({ label, value, sub, subColor = '#6b7280', onClick }) {
 
 function Section({ titre, lienLabel, onLien, children, style }) {
   return (
-    <div style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '14px 16px', ...style }}>
+    <div style={{ background: '#FFFFFF', borderRadius: 12, border: 'none', boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)', padding: '14px 16px', ...style }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0 }}>{titre}</p>
         {onLien && <button onClick={onLien} style={{ fontSize: FS.xs, fontWeight: '600', color: '#0d3580', background: 'transparent', border: 'none', cursor: 'pointer' }}>{lienLabel} →</button>}

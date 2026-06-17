@@ -38,14 +38,18 @@ export const COMPONENTS = {
   card: {
     background:   '#FFFFFF',
     borderRadius: '14px',
-    border:       '1.5px solid #0d3580',
+    border:       'none',
+    boxShadow:    '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)',
     padding:      '18px 20px',
+    transition:   'box-shadow 0.2s ease, transform 0.2s ease',
   },
   cardMetric: {
     background:   '#FFFFFF',
     borderRadius: '10px',
-    border:       '1.5px solid #0d3580',
+    border:       'none',
+    boxShadow:    '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)',
     padding:      '12px 16px',
+    transition:   'box-shadow 0.2s ease, transform 0.2s ease',
   },
   btnPrimary: {
     background:   '#0d3580',
