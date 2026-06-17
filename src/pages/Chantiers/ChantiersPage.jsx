@@ -5,6 +5,8 @@ import { useClients }   from '../../hooks/useClients'
 import { formatDate, formatStatut } from '../../utils/formatters'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { ProgressBar } from '../../components/ui/ProgressBar'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { BADGES } from '../../constants/theme'
 import ChantierForm from './ChantierForm'
 import AddIcon            from '@mui/icons-material/Add'
@@ -103,24 +105,30 @@ export default function ChantiersPage() {
           <EmptyState icon="🏗️" title="Aucun chantier" subtitle="Ouvrez un nouveau chantier pour démarrer" action={{ label: '+ Nouveau chantier', onClick: () => navigate('/chantiers/new') }} />
         ) : chantiersFiltres.map(c => {
           const client = clientMap[c.clientId]
-          const badge  = BADGES[c.statut] || BADGES.en_attente
+          const joursDepuis = c.dateDebut ? Math.max(0, Math.floor((Date.now() - new Date(c.dateDebut?.seconds ? c.dateDebut.seconds * 1000 : c.dateDebut).getTime()) / 86400000)) : 0
           return (
-            <div key={c.id} onClick={() => navigate(`/chantiers/${c.id}`)} style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
-              <div style={{ width: 40, height: 40, background: '#e8edf8', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <ConstructionIcon style={{ fontSize: 20, color: '#0d3580' }} />
+            <div key={c.id} onClick={() => navigate(`/chantiers/${c.id}`)}
+              style={{
+                background: '#fff', borderRadius: 14, padding: '16px 18px', cursor: 'pointer',
+                boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(13,53,128,0.14)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#111' }}>{c.nom}</span>
+                <StatusBadge statut={c.statut} />
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                  <span style={{ fontSize: 15, fontWeight: '600', color: '#111111' }}>{c.nom}</span>
-                  <span style={{ fontSize: 11, fontWeight: '600', padding: '2px 8px', borderRadius: 20, ...badge }}>{formatStatut(c.statut)}</span>
-                </div>
-                <p style={{ margin: 0, fontSize: 13, color: '#3d3d3d' }}>{client?.nom || '—'}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                  <LocationOnIcon style={{ fontSize: 12, color: '#6b7280' }} />
-                  <span style={{ fontSize: 12, color: '#6b7280' }}>{c.adresse?.ville || '—'} · Début : {formatDate(c.dateDebut)}</span>
-                </div>
+              <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>
+                {client?.nom || '—'} · {c.adresse?.ville || '—'} · Depuis {formatDate(c.dateDebut)}
               </div>
-              <ChevronRightIcon style={{ fontSize: 20, color: '#c8d3ee' }} />
+              <ProgressBar value={c.avancement || 0} showLabel height={7} />
+              <div style={{ display: 'flex', gap: 16, marginTop: 12, paddingTop: 12, borderTop: '0.5px solid #f0f2f7', fontSize: 12, color: '#6b7280' }}>
+                <span>👷 {c.nbOuvriers || 0} ouvriers</span>
+                <span>📅 J+{joursDepuis}</span>
+                <ChevronRightIcon style={{ fontSize: 18, color: '#c8d3ee', marginLeft: 'auto' }} />
+              </div>
             </div>
           )
         })}

@@ -8,6 +8,7 @@ import { useChantiers } from '../../hooks/useChantiers'
 import { usePersonnel } from '../../hooks/usePersonnel'
 import { useResponsive } from '../../hooks/useResponsive'
 import { useAuth } from '../../hooks/useAuth'
+import { ProgressBar } from '../../components/ui/ProgressBar'
 import TabMateriel from './TabMateriel'
 import TabPhotos   from './TabPhotos'
 import ArrowBackIcon      from '@mui/icons-material/ArrowBack'
@@ -184,6 +185,23 @@ export default function ChantierDetail() {
               <Row l="Début"        v={formatDate(chantier.dateDebut)} />
               <Row l="Fin prévue"   v={formatDate(chantier.dateFin)} />
               {chantier.dateFin_reelle && <Row l="Fin réelle" v={formatDate(chantier.dateFin_reelle)} />}
+            </InfoCard>
+
+            <InfoCard titre="Avancement">
+              <ProgressBar value={chantier.avancement || 0} showLabel height={10} />
+              {isPatron && (
+                <input
+                  type="range" min="0" max="100" step="5"
+                  value={chantier.avancement || 0}
+                  onChange={async (e) => {
+                    const val = parseInt(e.target.value)
+                    setChantier(prev => ({ ...prev, avancement: val }))
+                    const { updateDoc, doc: docRef, serverTimestamp } = await import('firebase/firestore')
+                    await updateDoc(docRef(db, 'chantiers', id), { avancement: val, updatedAt: serverTimestamp() })
+                  }}
+                  style={{ width: '100%', marginTop: 10, accentColor: '#0d3580' }}
+                />
+              )}
             </InfoCard>
 
             {isMobile && (
