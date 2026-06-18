@@ -133,3 +133,48 @@ Règles :
     }
   }
 )
+
+exports.lireBDC = onCall(
+  { region: 'europe-west1', secrets: [anthropicKey] },
+  async (request) => {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'Connexion requise.')
+    const { pdfBase64 } = request.data
+    if (!pdfBase64) throw new HttpsError('invalid-argument', 'pdfBase64 requis.')
+
+    const apiKey = anthropicKey.value()
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+            { type: 'text', text: `Tu lis un bon de commande (BDC) de travaux d'échafaudage en France.
+Extrais les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
+{
+  "clientNom": "nom de l'entreprise qui envoie le BDC",
+  "clientAdresse": "adresse complete du client",
+  "chantierNom": "nom ou reference du chantier",
+  "chantierAdresse": "adresse du chantier",
+  "dateIntervention": "YYYY-MM-DD",
+  "description": "description courte des travaux",
+  "montantHT": nombre en euros,
+  "tauxTVA": 0.20 ou 0.10 ou 0,
+  "montantTVA": nombre en euros,
+  "montantTTC": nombre en euros
+}
+Si une info est absente, mets null.` }
+          ]
+        }]
+      })
+    })
+    if (!resp.ok) throw new HttpsError('internal', 'Erreur IA ' + resp.status)
+    const j = await resp.json()
+    const t = j.content?.[0]?.text || '{}'
+    const m = t.match(/\{[\s\S]*\}/)
+    try { return JSON.parse(m?.[0] || '{}') } catch { return {} }
+  }
+)
