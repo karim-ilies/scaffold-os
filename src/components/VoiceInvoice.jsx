@@ -46,21 +46,15 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
 
     const recognition = new SpeechRecognition()
     recognition.lang = 'fr-FR'
-    recognition.continuous = true
+    recognition.continuous = false
     recognition.interimResults = true
 
-    let finalText = ''
-
     recognition.onresult = (event) => {
-      let interim = ''
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalText += event.results[i][0].transcript + ' '
-        } else {
-          interim += event.results[i][0].transcript
-        }
+      let text = ''
+      for (let i = 0; i < event.results.length; i++) {
+        text += event.results[i][0].transcript
       }
-      setTranscript(finalText + interim)
+      setTranscript(text)
     }
 
     recognition.onerror = (e) => {
@@ -71,9 +65,7 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
     }
 
     recognition.onend = () => {
-      if (phase === 'listening') {
-        setTranscript(finalText.trim())
-      }
+      setPhase('stopped')
     }
 
     recognitionRef.current = recognition
