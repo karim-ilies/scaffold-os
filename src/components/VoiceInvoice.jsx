@@ -40,32 +40,41 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
 
   function startListening() {
     setError(null)
-    setTranscript('')
-    setResult(null)
+    if (phase === 'idle') { setTranscript(''); setResult(null) }
     setPhase('listening')
 
     const recognition = new SpeechRecognition()
     recognition.lang = 'fr-FR'
-    recognition.continuous = false
+    recognition.continuous = true
     recognition.interimResults = true
 
+    const prefix = transcript ? transcript.trim() + ' ' : ''
+    let sessionFinal = ''
+
     recognition.onresult = (event) => {
-      let text = ''
+      let interim = ''
+      sessionFinal = ''
       for (let i = 0; i < event.results.length; i++) {
-        text += event.results[i][0].transcript
+        if (event.results[i].isFinal) {
+          sessionFinal += event.results[i][0].transcript + ' '
+        } else {
+          interim = event.results[i][0].transcript
+        }
       }
-      setTranscript(text)
+      setTranscript((prefix + sessionFinal + interim).trim())
     }
 
     recognition.onerror = (e) => {
-      if (e.error === 'no-speech') setError('Aucune voix détectée. Réessayez.')
-      else if (e.error === 'not-allowed') setError('Microphone non autorisé. Vérifiez les permissions.')
+      if (e.error === 'no-speech') return
+      if (e.error === 'not-allowed') setError('Microphone non autorisé. Vérifiez les permissions.')
       else setError(`Erreur : ${e.error}`)
       setPhase('idle')
     }
 
     recognition.onend = () => {
-      setPhase('stopped')
+      if (recognitionRef.current && phase === 'listening') {
+        try { recognitionRef.current.start() } catch {}
+      }
     }
 
     recognitionRef.current = recognition
@@ -176,21 +185,30 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
           </div>
         )}
 
-        {/* Phase stopped — transcription prête */}
+        {/* Phase stopped — transcription éditable */}
         {phase === 'stopped' && (
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Transcription</p>
-            <div style={{
-              background: '#f7f8fa', borderRadius: 12, padding: '14px 16px',
-              fontSize: 14, color: '#111', lineHeight: 1.5, marginBottom: 16,
-            }}>
-              {transcript || 'Aucun texte détecté'}
-            </div>
+            <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Transcription (modifiable)</p>
+            <textarea
+              value={transcript}
+              onChange={e => setTranscript(e.target.value)}
+              rows={4}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                background: '#f7f8fa', borderRadius: 12, padding: '14px 16px',
+                fontSize: 14, color: '#111', lineHeight: 1.5, marginBottom: 12,
+                border: '1.5px solid #e2e4ea', outline: 'none', resize: 'vertical',
+                fontFamily: 'inherit',
+              }}
+              placeholder="Modifiez le texte si besoin…"
+            />
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { setPhase('idle'); setTranscript('') }} style={{
-                flex: 1, background: '#f0f2f7', color: '#6b7280', border: 'none',
-                borderRadius: 10, padding: '10px', fontSize: 13, cursor: 'pointer',
-              }}>Recommencer</button>
+              <button onClick={() => startListening()} title="Ajouter du texte par la voix" style={{
+                width: 40, height: 40, borderRadius: '50%', background: '#e8edf8', border: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
+              }}>
+                <MicIcon style={{ fontSize: 20, color: '#0d3580' }} />
+              </button>
               <button onClick={analyser} disabled={!transcript.trim()} style={{
                 flex: 2, background: transcript.trim() ? '#0d3580' : '#c8d3ee', color: '#fff', border: 'none',
                 borderRadius: 10, padding: '10px', fontSize: 14, fontWeight: 600, cursor: transcript.trim() ? 'pointer' : 'not-allowed',
