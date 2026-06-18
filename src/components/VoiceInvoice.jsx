@@ -42,25 +42,28 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
 
   function startListening() {
     setError(null)
-    const prevText = phase === 'idle' ? '' : transcript.trim()
     if (phase === 'idle') { setTranscript(''); setResult(null) }
     setPhase('listening')
 
     const recognition = new SpeechRecognition()
     recognition.lang = 'fr-FR'
-    recognition.continuous = true
+    recognition.continuous = false
     recognition.interimResults = true
+    let captured = ''
 
     recognition.onresult = (event) => {
-      let text = ''
+      captured = ''
       for (let i = 0; i < event.results.length; i++) {
-        text += event.results[i][0].transcript
+        captured += event.results[i][0].transcript
       }
-      setTranscript(prevText ? (prevText + ' ' + text).trim() : text.trim())
+      setTranscript(prev => {
+        const base = phase === 'idle' ? '' : prev.replace(/\s*🎙.*$/, '').trim()
+        return (base ? base + ' ' : '') + captured
+      })
     }
 
     recognition.onerror = (e) => {
-      if (e.error === 'no-speech' || e.error === 'aborted') return
+      if (e.error === 'no-speech' || e.error === 'aborted') { setPhase('stopped'); return }
       if (e.error === 'not-allowed') setError('Microphone non autorisé.')
       else setError(`Erreur : ${e.error}`)
       setPhase('idle')
@@ -178,7 +181,7 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
         {/* Phase stopped — transcription éditable */}
         {phase === 'stopped' && (
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Transcription (modifiable)</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Votre dictée (modifiable)</p>
             <textarea
               value={transcript}
               onChange={e => setTranscript(e.target.value)}
@@ -186,23 +189,30 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
               style={{
                 width: '100%', boxSizing: 'border-box',
                 background: '#f7f8fa', borderRadius: 12, padding: '14px 16px',
-                fontSize: 14, color: '#111', lineHeight: 1.5, marginBottom: 12,
+                fontSize: 14, color: '#111', lineHeight: 1.5, marginBottom: 10,
                 border: '1.5px solid #e2e4ea', outline: 'none', resize: 'vertical',
                 fontFamily: 'inherit',
               }}
               placeholder="Modifiez le texte si besoin…"
             />
+            <button onClick={() => startListening()}
+              style={{
+                width: '100%', background: '#e8edf8', color: '#0d3580', border: '1.5px dashed #0d3580',
+                borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10,
+              }}
+            >
+              <MicIcon style={{ fontSize: 18 }} />Continuer à dicter
+            </button>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => startListening()} title="Ajouter du texte par la voix" style={{
-                width: 40, height: 40, borderRadius: '50%', background: '#e8edf8', border: 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
-              }}>
-                <MicIcon style={{ fontSize: 20, color: '#0d3580' }} />
-              </button>
+              <button onClick={() => { setPhase('idle'); setTranscript('') }} style={{
+                flex: 1, background: '#f0f2f7', color: '#6b7280', border: 'none',
+                borderRadius: 10, padding: '10px', fontSize: 13, cursor: 'pointer',
+              }}>Effacer</button>
               <button onClick={analyser} disabled={!transcript.trim()} style={{
                 flex: 2, background: transcript.trim() ? '#0d3580' : '#c8d3ee', color: '#fff', border: 'none',
                 borderRadius: 10, padding: '10px', fontSize: 14, fontWeight: 600, cursor: transcript.trim() ? 'pointer' : 'not-allowed',
-              }}>Analyser avec IA</button>
+              }}>Analyser avec IA →</button>
             </div>
           </div>
         )}
