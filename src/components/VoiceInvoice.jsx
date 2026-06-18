@@ -38,38 +38,35 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
   const [error, setError] = useState(null)
   const recognitionRef = useRef(null)
   const listeningRef = useRef(false)
+  const allTextRef = useRef('')
 
   function startListening() {
     setError(null)
-    if (!listeningRef.current) { setTranscript(prev => phase === 'idle' ? '' : prev); setResult(null) }
+    if (phase === 'idle') { allTextRef.current = ''; setTranscript(''); setResult(null) }
+    else { allTextRef.current = transcript.trim() + (transcript.trim() ? ' ' : '') }
     setPhase('listening')
     listeningRef.current = true
 
     const recognition = new SpeechRecognition()
     recognition.lang = 'fr-FR'
-    recognition.continuous = true
+    recognition.continuous = false
     recognition.interimResults = true
 
-    let prefix = ''
-    setTranscript(prev => { prefix = prev ? prev.trim() + ' ' : ''; return prev })
-    let sessionFinal = ''
-
     recognition.onresult = (event) => {
-      let interim = ''
-      sessionFinal = ''
-      for (let i = 0; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          sessionFinal += event.results[i][0].transcript + ' '
-        } else {
-          interim = event.results[i][0].transcript
-        }
+      const last = event.results[event.results.length - 1]
+      if (last.isFinal) {
+        allTextRef.current += last[0].transcript + ' '
+        setTranscript(allTextRef.current.trim())
+      } else {
+        setTranscript((allTextRef.current + last[0].transcript).trim())
       }
-      setTranscript((prefix + sessionFinal + interim).trim())
     }
 
     recognition.onerror = (e) => {
-      if (e.error === 'no-speech') return
-      if (e.error === 'aborted') return
+      if (e.error === 'no-speech' || e.error === 'aborted') {
+        if (listeningRef.current) { try { recognition.start() } catch {} }
+        return
+      }
       if (e.error === 'not-allowed') setError('Microphone non autorisé.')
       else setError(`Erreur : ${e.error}`)
       listeningRef.current = false
