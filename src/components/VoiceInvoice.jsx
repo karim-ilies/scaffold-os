@@ -37,18 +37,21 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const recognitionRef = useRef(null)
+  const listeningRef = useRef(false)
 
   function startListening() {
     setError(null)
-    if (phase === 'idle') { setTranscript(''); setResult(null) }
+    if (!listeningRef.current) { setTranscript(prev => phase === 'idle' ? '' : prev); setResult(null) }
     setPhase('listening')
+    listeningRef.current = true
 
     const recognition = new SpeechRecognition()
     recognition.lang = 'fr-FR'
     recognition.continuous = true
     recognition.interimResults = true
 
-    const prefix = transcript ? transcript.trim() + ' ' : ''
+    let prefix = ''
+    setTranscript(prev => { prefix = prev ? prev.trim() + ' ' : ''; return prev })
     let sessionFinal = ''
 
     recognition.onresult = (event) => {
@@ -66,14 +69,16 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
 
     recognition.onerror = (e) => {
       if (e.error === 'no-speech') return
-      if (e.error === 'not-allowed') setError('Microphone non autorisé. Vérifiez les permissions.')
+      if (e.error === 'aborted') return
+      if (e.error === 'not-allowed') setError('Microphone non autorisé.')
       else setError(`Erreur : ${e.error}`)
+      listeningRef.current = false
       setPhase('idle')
     }
 
     recognition.onend = () => {
-      if (recognitionRef.current && phase === 'listening') {
-        try { recognitionRef.current.start() } catch {}
+      if (listeningRef.current) {
+        try { recognition.start() } catch {}
       }
     }
 
@@ -82,6 +87,7 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
   }
 
   function stopListening() {
+    listeningRef.current = false
     if (recognitionRef.current) {
       recognitionRef.current.stop()
       recognitionRef.current = null
