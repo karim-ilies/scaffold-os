@@ -5,6 +5,7 @@ import { useResponsive } from '../hooks/useResponsive'
 import { logout }        from '../firebase/auth'
 import GlobalSearch      from './GlobalSearch/GlobalSearch'
 import { PageTransition } from './ui/PageTransition'
+import { ReadCounter } from './ui/ReadCounter'
 import DashboardIcon        from '@mui/icons-material/Dashboard'
 import ConstructionIcon     from '@mui/icons-material/Construction'
 import DescriptionIcon      from '@mui/icons-material/Description'
@@ -132,6 +133,7 @@ function DesktopLayout({ children, items, onLogout, user, role }) {
       </aside>
 
       <main style={{ flex: 1, overflowY: 'auto' }}><PageTransition>{children}</PageTransition></main>
+      <ReadCounter />
     </div>
   )
 }
