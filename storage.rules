@@ -55,5 +55,12 @@ service firebase.storage {
                    && request.resource.size < 5 * 1024 * 1024
                    && request.resource.contentType.matches('image/.*')
     }
+
+    // Bons de commande PDF — patron uniquement
+    match /bdc/{file} {
+      allow read:  if isPatron()
+      allow write: if isPatron()
+                   && request.resource.size < 10 * 1024 * 1024
+    }
   }
 }

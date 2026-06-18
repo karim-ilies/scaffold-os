@@ -52,14 +52,14 @@ export default function BonsCommandePage() {
         reader.readAsDataURL(file)
       })
 
-      setImportPhase('analyzing')
-      const functions = getFunctions(app, 'europe-west1')
-      const lire = httpsCallable(functions, 'lireBDC')
-      const { data } = await lire({ pdfBase64: base64, mimeType: file.type })
-
       const storRef = ref(storage, `bdc/${Date.now()}_${file.name}`)
       await uploadBytes(storRef, file)
       const pdfUrl = await getDownloadURL(storRef)
+
+      setImportPhase('analyzing')
+      const functions = getFunctions(app, 'europe-west1')
+      const lire = httpsCallable(functions, 'lireBDC', { timeout: 60000 })
+      const { data } = await lire({ pdfBase64: base64, mimeType: file.type })
 
       setExtractedData({ ...data, pdfUrl, pdfNom: file.name })
       setImportPhase('review')

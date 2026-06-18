@@ -143,19 +143,11 @@ exports.lireBDC = onCall(
     const isPdf = !mimeType || mimeType === 'application/pdf'
 
     const apiKey = anthropicKey.value()
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'x-api-key': apiKey, 'anthropic-version': '2025-01-24', 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 800,
-        messages: [{
-          role: 'user',
-          content: [
-            isPdf
-              ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } }
-              : { type: 'image', source: { type: 'base64', media_type: mimeType, data: pdfBase64 } },
-            { type: 'text', text: `Tu lis un bon de commande (BDC) de travaux d'échafaudage en France.
+    const contentItem = isPdf
+      ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } }
+      : { type: 'image', source: { type: 'base64', media_type: mimeType, data: pdfBase64 } }
+
+    const prompt = `Tu lis un bon de commande (BDC) de travaux d'echafaudage en France.
 Extrais les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
 {
   "clientNom": "nom de l'entreprise qui envoie le BDC",
@@ -169,15 +161,33 @@ Extrais les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
   "montantTVA": nombre en euros,
   "montantTTC": nombre en euros
 }
-Si une info est absente, mets null.` }
-          ]
-        }]
+Si une info est absente, mets null.`
+
+    let resp
+    try {
+      resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': apiKey, 'anthropic-version': '2024-10-22', 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 800,
+          messages: [{ role: 'user', content: [contentItem, { type: 'text', text: prompt }] }]
+        })
       })
-    })
-    if (!resp.ok) throw new HttpsError('internal', 'Erreur IA ' + resp.status)
+    } catch (fetchErr) {
+      console.error('Fetch error:', fetchErr.message)
+      throw new HttpsError('internal', 'Erreur réseau: ' + fetchErr.message)
+    }
+
+    if (!resp.ok) {
+      const errBody = await resp.text()
+      console.error('Anthropic error:', resp.status, errBody)
+      throw new HttpsError('internal', 'Erreur IA ' + resp.status + ': ' + errBody.substring(0, 200))
+    }
+
     const j = await resp.json()
     const t = j.content?.[0]?.text || '{}'
-    const m = t.match(/\{[\s\S]*\}/)
-    try { return JSON.parse(m?.[0] || '{}') } catch { return {} }
+    const m2 = t.match(/\{[\s\S]*\}/)
+    try { return JSON.parse(m2?.[0] || '{}') } catch { return {} }
   }
 )
