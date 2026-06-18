@@ -42,10 +42,10 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
 
   function startListening() {
     setError(null)
-    if (phase === 'idle') { allTextRef.current = ''; setTranscript(''); setResult(null) }
-    else { allTextRef.current = transcript.trim() + (transcript.trim() ? ' ' : '') }
+    if (phase === 'idle') { setTranscript(''); setResult(null) }
     setPhase('listening')
-    listeningRef.current = true
+
+    const prevText = phase === 'idle' ? '' : transcript.trim()
 
     const recognition = new SpeechRecognition()
     recognition.lang = 'fr-FR'
@@ -53,30 +53,24 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
     recognition.interimResults = true
 
     recognition.onresult = (event) => {
-      const last = event.results[event.results.length - 1]
-      if (last.isFinal) {
-        allTextRef.current += last[0].transcript + ' '
-        setTranscript(allTextRef.current.trim())
-      } else {
-        setTranscript((allTextRef.current + last[0].transcript).trim())
+      let text = ''
+      for (let i = 0; i < event.results.length; i++) {
+        text += event.results[i][0].transcript
       }
+      const combined = prevText ? prevText + ' ' + text : text
+      setTranscript(combined.trim())
     }
 
     recognition.onerror = (e) => {
-      if (e.error === 'no-speech' || e.error === 'aborted') {
-        if (listeningRef.current) { try { recognition.start() } catch {} }
-        return
-      }
+      if (e.error === 'no-speech') { setPhase(prevText ? 'stopped' : 'idle'); return }
+      if (e.error === 'aborted') return
       if (e.error === 'not-allowed') setError('Microphone non autorisé.')
       else setError(`Erreur : ${e.error}`)
-      listeningRef.current = false
       setPhase('idle')
     }
 
     recognition.onend = () => {
-      if (listeningRef.current) {
-        try { recognition.start() } catch {}
-      }
+      setPhase('stopped')
     }
 
     recognitionRef.current = recognition
@@ -84,11 +78,7 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
   }
 
   function stopListening() {
-    listeningRef.current = false
-    if (recognitionRef.current) {
-      recognitionRef.current.stop()
-      recognitionRef.current = null
-    }
+    if (recognitionRef.current) { recognitionRef.current.stop(); recognitionRef.current = null }
     setPhase('stopped')
   }
 
