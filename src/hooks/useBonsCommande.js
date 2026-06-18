@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase/config'
 
 export function useBonsCommande() {
@@ -33,7 +33,11 @@ export function useBonsCommande() {
     })
   }
 
+  async function supprimerBDC(bdcId) {
+    await deleteDoc(doc(db, 'bons_commande', bdcId))
+  }
+
   const bdcsNouveaux = bdcs.filter(b => b.statut === 'nouveau')
 
-  return { bdcs, loading, creerBDC, accepterBDC, refuserBDC, bdcsNouveaux }
+  return { bdcs, loading, creerBDC, accepterBDC, refuserBDC, supprimerBDC, bdcsNouveaux }
 }

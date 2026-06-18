@@ -21,7 +21,7 @@ import CheckIcon from '@mui/icons-material/Check'
 import GroupsIcon from '@mui/icons-material/Groups'
 
 export default function BonsCommandePage() {
-  const { bdcs, loading, creerBDC, accepterBDC, refuserBDC, bdcsNouveaux } = useBonsCommande()
+  const { bdcs, loading, creerBDC, accepterBDC, refuserBDC, supprimerBDC, bdcsNouveaux } = useBonsCommande()
   const { clients } = useClients()
   const { chantiers } = useChantiers()
   const { personnel } = usePersonnel()
@@ -432,6 +432,16 @@ export default function BonsCommandePage() {
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#dc2626', margin: 0 }}>✕ Refusé{selectedBDC.motifRefus ? ` — ${selectedBDC.motifRefus}` : ''}</p>
               </div>
             )}
+
+            <button
+              onClick={() => {
+                if (window.confirm('Supprimer ce bon de commande ?\n\nLes factures et chantiers existants ne seront PAS affectés.')) {
+                  supprimerBDC(selectedBDC.id)
+                  setSelectedBDC(null)
+                }
+              }}
+              style={{ width: '100%', marginTop: 16, background: 'transparent', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: 10, padding: 10, fontSize: 12, cursor: 'pointer' }}
+            >Supprimer ce BDC</button>
           </div>
         </div>
       )}

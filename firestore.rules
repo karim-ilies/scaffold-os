@@ -155,12 +155,12 @@ service cloud.firestore {
       allow write: if isPatron()
     }
 
-    // BONS DE COMMANDE
+    // BONS DE COMMANDE — suppression autorisée (n'affecte pas factures/pointages)
     match /bons_commande/{id} {
       allow read:   if isPatron()
       allow create: if isPatron()
       allow update: if isPatron()
-      allow delete: if false
+      allow delete: if isPatron()
     }
   }
 }
