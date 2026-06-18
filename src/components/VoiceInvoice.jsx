@@ -42,14 +42,13 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
 
   function startListening() {
     setError(null)
+    const prevText = phase === 'idle' ? '' : transcript.trim()
     if (phase === 'idle') { setTranscript(''); setResult(null) }
     setPhase('listening')
 
-    const prevText = phase === 'idle' ? '' : transcript.trim()
-
     const recognition = new SpeechRecognition()
     recognition.lang = 'fr-FR'
-    recognition.continuous = false
+    recognition.continuous = true
     recognition.interimResults = true
 
     recognition.onresult = (event) => {
@@ -57,13 +56,11 @@ export function VoiceInvoiceModal({ clients, chantiers, onClose, onResult }) {
       for (let i = 0; i < event.results.length; i++) {
         text += event.results[i][0].transcript
       }
-      const combined = prevText ? prevText + ' ' + text : text
-      setTranscript(combined.trim())
+      setTranscript(prevText ? (prevText + ' ' + text).trim() : text.trim())
     }
 
     recognition.onerror = (e) => {
-      if (e.error === 'no-speech') { setPhase(prevText ? 'stopped' : 'idle'); return }
-      if (e.error === 'aborted') return
+      if (e.error === 'no-speech' || e.error === 'aborted') return
       if (e.error === 'not-allowed') setError('Microphone non autorisé.')
       else setError(`Erreur : ${e.error}`)
       setPhase('idle')
