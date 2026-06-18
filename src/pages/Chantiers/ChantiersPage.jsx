@@ -6,6 +6,7 @@ import { formatDate, formatStatut } from '../../utils/formatters'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { ProgressBar } from '../../components/ui/ProgressBar'
+import { LoadMoreButton } from '../../components/ui/LoadMoreButton'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { BADGES } from '../../constants/theme'
 import ChantierForm from './ChantierForm'
@@ -28,6 +29,7 @@ export default function ChantiersPage() {
   const [formOpen,      setFormOpen]      = useState(false)
   const [search,        setSearch]        = useState('')
   const [filtreStatut,  setFiltreStatut]  = useState('')
+  const [visibleCount,  setVisibleCount]  = useState(12)
   const navigate = useNavigate()
 
   const clientMap = useMemo(() => Object.fromEntries(clients.map(c => [c.id, c])), [clients])
@@ -103,7 +105,8 @@ export default function ChantiersPage() {
           <div style={{ textAlign: 'center', padding: 48, color: '#6b7280' }}>Chargement…</div>
         ) : chantiersFiltres.length === 0 ? (
           <EmptyState icon="🏗️" title="Aucun chantier" subtitle="Ouvrez un nouveau chantier pour démarrer" action={{ label: '+ Nouveau chantier', onClick: () => navigate('/chantiers/new') }} />
-        ) : chantiersFiltres.map(c => {
+        ) : (<>
+          {chantiersFiltres.slice(0, visibleCount).map(c => {
           const client = clientMap[c.clientId]
           const joursDepuis = c.dateDebut ? Math.max(0, Math.floor((Date.now() - new Date(c.dateDebut?.seconds ? c.dateDebut.seconds * 1000 : c.dateDebut).getTime()) / 86400000)) : 0
           return (
@@ -132,6 +135,13 @@ export default function ChantiersPage() {
             </div>
           )
         })}
+          <LoadMoreButton
+            hasMore={visibleCount < chantiersFiltres.length}
+            loading={false}
+            onLoadMore={() => setVisibleCount(c => c + 12)}
+            totalLoaded={chantiersFiltres.length}
+          />
+        </>)}
       </div>
     </div>
   )

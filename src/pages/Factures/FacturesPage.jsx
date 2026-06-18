@@ -5,6 +5,7 @@ import { useClients }  from '../../hooks/useClients'
 import { formatEuro, formatDate, formatStatut } from '../../utils/formatters'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { LoadMoreButton } from '../../components/ui/LoadMoreButton'
 import { estEnRetard, joursDeRetard } from '../../utils/calcFacture'
 import { BADGES } from '../../constants/theme'
 import FactureWizard from './FactureWizard'
@@ -21,6 +22,7 @@ export default function FacturesPage() {
   const [search,        setSearch]        = useState('')
   const [filtreStatut,  setFiltreStatut]  = useState('')
   const [showArchives,  setShowArchives]  = useState(false)
+  const [visibleCount,  setVisibleCount]  = useState(15)
 
   const clientMap = useMemo(() => Object.fromEntries(clients.map(c => [c.id, c])), [clients])
 
@@ -109,16 +111,24 @@ export default function FacturesPage() {
         ) : facturesFiltrees.length === 0 ? (
           <EmptyState icon="🧾" title="Aucune facture" subtitle="Créez votre première facture pour commencer" action={{ label: '+ Nouvelle facture', onClick: () => navigate('/factures/new') }} />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {facturesFiltrees.map(facture => (
-              <FactureCard
-                key={facture.id}
-                facture={facture}
-                client={clientMap[facture.clientId]}
-                onClick={() => navigate(`/factures/${facture.id}`)}
-              />
-            ))}
-          </div>
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {facturesFiltrees.slice(0, visibleCount).map(facture => (
+                <FactureCard
+                  key={facture.id}
+                  facture={facture}
+                  client={clientMap[facture.clientId]}
+                  onClick={() => navigate(`/factures/${facture.id}`)}
+                />
+              ))}
+            </div>
+            <LoadMoreButton
+              hasMore={visibleCount < facturesFiltrees.length}
+              loading={false}
+              onLoadMore={() => setVisibleCount(c => c + 15)}
+              totalLoaded={facturesFiltrees.length}
+            />
+          </>
         )}
       </div>
     </div>

@@ -8,6 +8,7 @@ import { useAuth }    from '../../hooks/useAuth'
 import { useClients } from '../../hooks/useClients'
 import { formatEuro, formatDate } from '../../utils/formatters'
 import { useResponsive } from '../../hooks/useResponsive'
+import { LoadMoreButton } from '../../components/ui/LoadMoreButton'
 import AddIcon           from '@mui/icons-material/Add'
 import ArrowUpwardIcon   from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
@@ -38,6 +39,7 @@ export default function TresoreriePage() {
   const [search,     setSearch]     = useState('')
   const [modalOpen,  setModalOpen]  = useState(false)
   const [loading,    setLoading]    = useState(true)
+  const [visibleCount, setVisibleCount] = useState(25)
 
   // Listener mouvements
   useEffect(() => {
@@ -268,7 +270,7 @@ export default function TresoreriePage() {
           ? <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af', fontSize: 14 }}>Aucun mouvement</div>
           : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {filtered.map(m => {
+              {filtered.slice(0, visibleCount).map(m => {
                 const cat   = CATEGORIES[m.categorie] || CATEGORIES.autre
                 const isEnc = m.type === 'encaissement'
                 return (
@@ -301,6 +303,7 @@ export default function TresoreriePage() {
                   </div>
                 )
               })}
+              <LoadMoreButton hasMore={visibleCount < filtered.length} loading={false} onLoadMore={() => setVisibleCount(c => c + 25)} totalLoaded={filtered.length} />
             </div>
           )
         }
