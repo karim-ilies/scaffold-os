@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { collection, query, orderBy, limit, getDocs, where, onSnapshot } from 'firebase/firestore'
+import { collection, query, orderBy, limit, getDocs, where, onSnapshot, Timestamp } from 'firebase/firestore'
 import { db } from '../../firebase/config'
 import { useAuth }      from '../../hooks/useAuth'
 import { useChantiers } from '../../hooks/useChantiers'
@@ -73,8 +73,10 @@ export default function DashboardPage() {
     async function load() {
       try {
         if (isPatron || isComptable) {
+          const sixMonthsAgo = new Date()
+          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
           const [fSnap, aSnap] = await Promise.all([
-            getDocs(query(collection(db, 'factures'), orderBy('dateEmission', 'desc'))),
+            getDocs(query(collection(db, 'factures'), where('dateEmission', '>=', Timestamp.fromDate(sixMonthsAgo)), orderBy('dateEmission', 'desc'))),
             getDocs(query(collection(db, 'factures'), orderBy('createdAt', 'desc'), limit(5))),
           ])
           setFactures(fSnap.docs.map(d => ({ id: d.id, ...d.data() })))
