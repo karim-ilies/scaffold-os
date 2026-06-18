@@ -149,22 +149,39 @@ export default function BonsCommandePage() {
         createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
       })
 
-      // Créer le planning pour l'équipe sélectionnée
-      for (const uid of selectedOuvriers) {
-        const o = actifs.find(a => a.id === uid)
-        await addDoc(collection(db, 'planning'), {
-          ouvrierUid: uid,
-          ouvrierNom: o ? `${o.prenom} ${o.nom}` : '',
-          ouvrierEmail: o?.email || '',
-          chantierId: chantierRef.id,
-          chantierNom: bdc.chantierNom || bdc.description || '',
-          chantierAdresse: bdc.chantierAdresse || '',
-          date: dateDebut,
-          createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
-        })
+      // Calculer les jours du chantier
+      const jours = [dateDebut]
+      if (bdc.dateFin && bdc.dateFin !== dateDebut) {
+        const start = new Date(dateDebut + 'T12:00:00')
+        const end = new Date(bdc.dateFin + 'T12:00:00')
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+          if (!jours.includes(iso)) jours.push(iso)
+        }
+      } else if (bdc.description?.match(/2\s*jours|deux\s*jours/i) || bdc.chantierNom?.match(/2\s*jours|deux\s*jours/i)) {
+        const next = new Date(dateDebut + 'T12:00:00')
+        next.setDate(next.getDate() + 1)
+        jours.push(`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`)
       }
 
-      await accepterBDC(bdc.id, { chantierId: chantierRef.id, factureId: factureRef.id, equipe: selectedOuvriers, jours: [dateDebut] })
+      // Créer le planning pour chaque ouvrier × chaque jour
+      for (const uid of selectedOuvriers) {
+        const o = actifs.find(a => a.id === uid)
+        for (const jour of jours) {
+          await addDoc(collection(db, 'planning'), {
+            ouvrierUid: uid,
+            ouvrierNom: o ? `${o.prenom} ${o.nom}` : '',
+            ouvrierEmail: o?.email || '',
+            chantierId: chantierRef.id,
+            chantierNom: bdc.chantierNom || bdc.description || '',
+            chantierAdresse: bdc.chantierAdresse || '',
+            date: jour,
+            createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+          })
+        }
+      }
+
+      await accepterBDC(bdc.id, { chantierId: chantierRef.id, factureId: factureRef.id, equipe: selectedOuvriers, jours })
       setAcceptConfig(null)
       setSelectedBDC(null)
     } finally { setSaving(false) }
