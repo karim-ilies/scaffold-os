@@ -144,7 +144,9 @@ export default function DashboardPage() {
     })
     return Object.entries(map).map(([nom, ca]) => ({ nom, ca })).sort((a, b) => b.ca - a.ca).slice(0, 6)
   }, [factures, clientMap])
-  const ouvrierActifs    = [...new Set(pointagesJ.filter(p => p.statut === 'en_cours').map(p => p.ouvrierId))].length
+  const ouvrierActifs    = [...new Set(pointagesJ.map(p => p.ouvrierId))].length
+  const { planning: planningJour } = usePlanning({ dateDebut: today, dateFin: today })
+  const ouvriersPrevus   = [...new Set(planningJour.map(p => p.ouvrierUid))].length
 
   if (loading) return (
     <div style={{ background: '#F7F8FA', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif" }}>
@@ -206,10 +208,13 @@ export default function DashboardPage() {
           />
           {afficherEquipe && (
             <KPI
-              label="Ouvriers actifs"
-              value={ouvrierActifs}
-              sub="aujourd'hui"
-              bg="#f9fafb" accent="#6b7280" valueColor="#374151"
+              label="Ouvriers pointés"
+              value={ouvriersPrevus > 0 ? `${ouvrierActifs}/${ouvriersPrevus}` : ouvrierActifs}
+              sub={ouvriersPrevus > 0 && ouvrierActifs < ouvriersPrevus ? `${ouvriersPrevus - ouvrierActifs} absent(s)` : 'aujourd\'hui'}
+              subColor={ouvriersPrevus > 0 && ouvrierActifs < ouvriersPrevus ? '#dc2626' : '#6b7280'}
+              bg={ouvrierActifs >= ouvriersPrevus && ouvriersPrevus > 0 ? '#f0fdf4' : ouvrierActifs > 0 ? '#fefce8' : '#f9fafb'}
+              accent={ouvrierActifs >= ouvriersPrevus && ouvriersPrevus > 0 ? '#16a34a' : ouvrierActifs > 0 ? '#d97706' : '#6b7280'}
+              valueColor={ouvrierActifs >= ouvriersPrevus && ouvriersPrevus > 0 ? '#16a34a' : ouvrierActifs > 0 ? '#d97706' : '#374151'}
             />
           )}
         </div>
@@ -426,16 +431,18 @@ function tempsEcoule(heureDebut) {
 }
 
 function TerrainLiveWidget({ chantiers, style }) {
-  const [actifs,   setActifs]   = useState([])
-  const [usersMap, setUsersMap] = useState({})
-  const [open,     setOpen]     = useState({})
+  const todayStr = dateToString(new Date())
+  const { planning } = usePlanning({ dateDebut: todayStr, dateFin: todayStr })
+  const [pointages, setPointages] = useState([])
+  const [usersMap,  setUsersMap]  = useState({})
+  const [open,      setOpen]      = useState({})
 
   useEffect(() => {
-    const q = query(collection(db, 'pointages'), where('statut', '==', 'en_cours'))
+    const q = query(collection(db, 'pointages'), where('date', '==', todayStr))
     return onSnapshot(q, snap => {
-      setActifs(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setPointages(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     }, () => {})
-  }, [])
+  }, [todayStr])
 
   useEffect(() => {
     getDocs(collection(db, 'users')).then(snap => {
@@ -447,76 +454,107 @@ function TerrainLiveWidget({ chantiers, style }) {
 
   const chantiersMap = useMemo(() => Object.fromEntries(chantiers.map(c => [c.id, c])), [chantiers])
 
-  const parChantier = useMemo(() => {
-    const groups = {}
-    actifs.forEach(p => {
-      const cid = p.chantierId || 'inconnu'
-      if (!groups[cid]) groups[cid] = []
-      groups[cid].push(p)
+  const presenceData = useMemo(() => {
+    const planParChantier = {}
+    planning.forEach(p => {
+      if (!planParChantier[p.chantierId]) planParChantier[p.chantierId] = new Set()
+      planParChantier[p.chantierId].add(p.ouvrierUid)
     })
-    return groups
-  }, [actifs])
+    const pointeUids = new Set(pointages.map(p => p.ouvrierId))
 
-  if (actifs.length === 0) return null
+    const result = []
+    Object.entries(planParChantier).forEach(([chantierId, prevusSet]) => {
+      const prevus = [...prevusSet]
+      const arrives = prevus.filter(uid => pointeUids.has(uid))
+      const manquants = prevus.filter(uid => !pointeUids.has(uid))
+      result.push({ chantierId, prevus, arrives, manquants, total: prevus.length, nbArrives: arrives.length })
+    })
+    return result.sort((a, b) => (a.nbArrives / a.total) - (b.nbArrives / b.total))
+  }, [planning, pointages])
+
+  const totalPrevus  = presenceData.reduce((s, d) => s + d.total, 0)
+  const totalArrives = presenceData.reduce((s, d) => s + d.nbArrives, 0)
+
+  if (presenceData.length === 0 && pointages.length === 0) return null
+
+  function nomOuvrier(uid) {
+    const u = usersMap[uid]
+    return u ? `${u.prenom || ''} ${u.nom || ''}`.trim() : '—'
+  }
 
   return (
     <div style={{ background: '#FFFFFF', borderRadius: 12, border: 'none', boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)', padding: '14px 16px', ...style }}>
       <style>{`@keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.35} }`}</style>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block', animation: 'livePulse 1.5s infinite' }} />
-          <p style={{ fontSize: FS.base, fontWeight: '700', color: '#111111', margin: 0 }}>Terrain en direct</p>
+          <p style={{ fontSize: FS.base, fontWeight: '700', color: '#111111', margin: 0 }}>Présence chantiers</p>
         </div>
-        <span style={{ fontSize: FS.xs, fontWeight: '600', background: '#e8edf8', color: '#0d3580', padding: '3px 10px', borderRadius: 20 }}>
-          {actifs.length} actif{actifs.length > 1 ? 's' : ''}
+        <span style={{
+          fontSize: FS.xs, fontWeight: '700', padding: '3px 10px', borderRadius: 20,
+          background: totalArrives === totalPrevus ? '#dcfce7' : totalArrives > 0 ? '#fef9c3' : '#fee2e2',
+          color: totalArrives === totalPrevus ? '#16a34a' : totalArrives > 0 ? '#a16207' : '#dc2626',
+        }}>
+          {totalArrives}/{totalPrevus} pointés
         </span>
       </div>
 
-      {Object.entries(parChantier).map(([chantierId, pts], idx, arr) => {
-        const chantier = chantiersMap[chantierId]
-        const isOpen   = !!open[chantierId]
-        const isLast   = idx === arr.length - 1
+      {presenceData.map((d, idx) => {
+        const chantier = chantiersMap[d.chantierId]
+        const isOpen = !!open[d.chantierId]
+        const allOk = d.nbArrives === d.total
+        const partial = d.nbArrives > 0 && !allOk
+        const none = d.nbArrives === 0
+
+        const statusColor = allOk ? '#16a34a' : partial ? '#d97706' : '#dc2626'
+        const statusBg = allOk ? '#dcfce7' : partial ? '#fef9c3' : '#fee2e2'
+        const statusIcon = allOk ? '🟢' : partial ? '🟡' : '🔴'
+
         return (
-          <div key={chantierId} style={{ borderBottom: isLast && !isOpen ? 'none' : '1px solid #f3f4f6' }}>
+          <div key={d.chantierId} style={{ borderBottom: idx < presenceData.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
             <div
-              onClick={() => setOpen(o => ({ ...o, [chantierId]: !o[chantierId] }))}
+              onClick={() => setOpen(o => ({ ...o, [d.chantierId]: !o[d.chantierId] }))}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', cursor: 'pointer' }}
             >
-              <div style={{ width: 32, height: 32, background: '#e8edf8', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <ConstructionIcon style={{ fontSize: 16, color: '#0d3580' }} />
-              </div>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>{statusIcon}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {chantier?.nom || 'Chantier inconnu'}
+                <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0 }}>
+                  {chantier?.nom || '?'}
                 </p>
-                <p style={{ fontSize: FS.xs, color: '#6b7280', margin: '1px 0 0' }}>
-                  {pts.length} ouvrier{pts.length > 1 ? 's' : ''}
-                </p>
+                {d.manquants.length > 0 && (
+                  <p style={{ fontSize: FS.xs, color: '#dc2626', margin: '2px 0 0', fontWeight: 500 }}>
+                    Manque : {d.manquants.map(uid => nomOuvrier(uid)).join(', ')}
+                  </p>
+                )}
               </div>
-              <span style={{ fontSize: FS.xs, fontWeight: '600', background: '#e8edf8', color: '#0d3580', padding: '2px 8px', borderRadius: 20, flexShrink: 0 }}>
-                👷 {pts.length}
+              <span style={{
+                fontSize: FS.sm, fontWeight: '700', padding: '3px 10px', borderRadius: 20,
+                background: statusBg, color: statusColor, flexShrink: 0,
+              }}>
+                {d.nbArrives}/{d.total}
               </span>
-              {isOpen
-                ? <ExpandLessIcon style={{ fontSize: 18, color: '#0d3580' }} />
-                : <ExpandMoreIcon style={{ fontSize: 18, color: '#0d3580' }} />
-              }
+              {isOpen ? <ExpandLessIcon style={{ fontSize: 18, color: '#0d3580' }} /> : <ExpandMoreIcon style={{ fontSize: 18, color: '#0d3580' }} />}
             </div>
 
             {isOpen && (
-              <div style={{ paddingBottom: 8, paddingLeft: 42 }}>
-                {pts.map((p, i) => {
-                  const u   = usersMap[p.ouvrierId]
-                  const nom = u ? `${u.prenom || ''} ${u.nom || ''}`.trim() : '—'
-                  const dur = tempsEcoule(p.heureDebut)
+              <div style={{ paddingBottom: 8, paddingLeft: 32 }}>
+                {d.prevus.map((uid, i) => {
+                  const arrive = d.arrives.includes(uid)
+                  const ptg = pointages.find(p => p.ouvrierId === uid)
                   return (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < pts.length - 1 ? '1px solid #f9fafb' : 'none' }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a', flexShrink: 0 }} />
-                      <p style={{ fontSize: FS.sm, fontWeight: '500', color: '#374151', margin: 0, flex: 1 }}>{nom}</p>
-                      {dur && (
+                    <div key={uid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < d.prevus.length - 1 ? '1px solid #f9fafb' : 'none' }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: arrive ? '#16a34a' : '#dc2626', flexShrink: 0 }} />
+                      <p style={{ fontSize: FS.sm, fontWeight: '500', color: arrive ? '#374151' : '#dc2626', margin: 0, flex: 1 }}>
+                        {nomOuvrier(uid)}
+                      </p>
+                      {arrive && ptg?.heureDebut && (
                         <span style={{ fontSize: FS.xs, color: '#6b7280', background: '#f3f4f6', padding: '1px 7px', borderRadius: 20 }}>
-                          {dur}
+                          depuis {ptg.heureDebut}
                         </span>
+                      )}
+                      {!arrive && (
+                        <span style={{ fontSize: FS.xs, color: '#dc2626', fontWeight: 600 }}>Absent</span>
                       )}
                     </div>
                   )
