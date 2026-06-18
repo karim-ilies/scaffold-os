@@ -1,5 +1,7 @@
 import emailjs from '@emailjs/browser'
 
+const EMAILS_PLANNING_DESACTIVES = true
+
 const SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID
 const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_PLANNING_TEMPLATE_ID
 const PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
@@ -17,7 +19,7 @@ export async function envoyerEmailPlanning({
   action,
   chefNom, coequipiers,
 }) {
-  if (!TEMPLATE_ID || !ouvrierEmail) return false
+  if (EMAILS_PLANNING_DESACTIVES || !TEMPLATE_ID || !ouvrierEmail) return false
 
   // Date ou plage de dates
   let datePlanifiee
