@@ -138,20 +138,23 @@ exports.lireBDC = onCall(
   { region: 'europe-west1', secrets: [anthropicKey] },
   async (request) => {
     if (!request.auth) throw new HttpsError('unauthenticated', 'Connexion requise.')
-    const { pdfBase64 } = request.data
+    const { pdfBase64, mimeType } = request.data
     if (!pdfBase64) throw new HttpsError('invalid-argument', 'pdfBase64 requis.')
+    const isPdf = !mimeType || mimeType === 'application/pdf'
 
     const apiKey = anthropicKey.value()
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2025-01-24', 'content-type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-6',
         max_tokens: 800,
         messages: [{
           role: 'user',
           content: [
-            { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+            isPdf
+              ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } }
+              : { type: 'image', source: { type: 'base64', media_type: mimeType, data: pdfBase64 } },
             { type: 'text', text: `Tu lis un bon de commande (BDC) de travaux d'échafaudage en France.
 Extrais les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
 {

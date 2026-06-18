@@ -39,7 +39,9 @@ export default function BonsCommandePage() {
   const actifs = personnel.filter(o => o.actif !== false && (o.role === 'ouvrier' || o.role === 'chef_equipe'))
 
   async function handleImportPDF(file) {
-    if (!file || !file.type.includes('pdf')) return
+    if (!file) return
+    const isValid = file.type.includes('pdf') || file.type.startsWith('image/')
+    if (!isValid) return
     setImportPhase('uploading')
 
     try {
@@ -53,7 +55,7 @@ export default function BonsCommandePage() {
       setImportPhase('analyzing')
       const functions = getFunctions(app, 'europe-west1')
       const lire = httpsCallable(functions, 'lireBDC')
-      const { data } = await lire({ pdfBase64: base64 })
+      const { data } = await lire({ pdfBase64: base64, mimeType: file.type })
 
       const storRef = ref(storage, `bdc/${Date.now()}_${file.name}`)
       await uploadBytes(storRef, file)
@@ -126,16 +128,21 @@ export default function BonsCommandePage() {
         <div style={{ padding: 20, maxWidth: 560, margin: '0 auto' }}>
 
           {importPhase === 'idle' && (
-            <label style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-              background: '#fff', borderRadius: 16, border: '2px dashed #0d3580', padding: '48px 24px',
-              cursor: 'pointer', textAlign: 'center',
-              boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)',
-            }}>
+            <label
+              onDragOver={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = '#16a34a'; e.currentTarget.style.background = '#f0fdf4' }}
+              onDragLeave={e => { e.currentTarget.style.borderColor = '#0d3580'; e.currentTarget.style.background = '#fff' }}
+              onDrop={e => { e.preventDefault(); e.stopPropagation(); e.currentTarget.style.borderColor = '#0d3580'; e.currentTarget.style.background = '#fff'; const f = e.dataTransfer.files[0]; if (f) handleImportPDF(f) }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+                background: '#fff', borderRadius: 16, border: '2px dashed #0d3580', padding: '48px 24px',
+                cursor: 'pointer', textAlign: 'center', transition: 'border-color 0.15s, background 0.15s',
+                boxShadow: '0 1px 3px rgba(13,53,128,0.08), 0 4px 16px rgba(13,53,128,0.06)',
+              }}
+            >
               <UploadFileIcon style={{ fontSize: 48, color: '#0d3580' }} />
               <span style={{ fontSize: 16, fontWeight: 600, color: '#0d3580' }}>Choisir un PDF</span>
               <span style={{ fontSize: 13, color: '#6b7280' }}>ou glissez-le ici</span>
-              <input ref={fileRef} type="file" accept="application/pdf" style={{ display: 'none' }}
+              <input ref={fileRef} type="file" accept="application/pdf,image/*" style={{ display: 'none' }}
                 onChange={e => handleImportPDF(e.target.files[0])} />
             </label>
           )}
