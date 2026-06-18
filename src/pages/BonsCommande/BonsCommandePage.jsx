@@ -83,17 +83,34 @@ export default function BonsCommandePage() {
   const [acceptConfig, setAcceptConfig] = useState(null)
 
   function openAcceptFlow(bdc) {
-    const matchedClient = clients.find(c => c.nom?.toLowerCase().includes(bdc.clientNom?.toLowerCase()?.split(' ')[0] || '???'))
+    const bdcNom = (bdc.clientNom || '').toLowerCase()
+    const matchedClient = clients.find(c => {
+      const cNom = (c.nom || '').toLowerCase()
+      return cNom.includes(bdcNom) || bdcNom.includes(cNom) || bdcNom.split(' ').some(w => w.length > 3 && cNom.includes(w))
+    })
     setAcceptConfig({
       bdc,
-      clientId: matchedClient?.id || '',
+      clientId: matchedClient?.id || 'new',
       selectedOuvriers: [],
     })
   }
 
   async function handleAccepter() {
     if (!acceptConfig) return
-    const { bdc, clientId, selectedOuvriers } = acceptConfig
+    let { bdc, clientId, selectedOuvriers } = acceptConfig
+
+    // Créer le client s'il est nouveau
+    if (clientId === 'new' && bdc.clientNom) {
+      const newRef = await addDoc(collection(db, 'clients'), {
+        nom: bdc.clientNom,
+        type: 'pro',
+        adresse: { rue: bdc.clientAdresse || '', cp: '', ville: '' },
+        contact: { nom: '', tel: '', email: '' },
+        actif: true,
+        createdAt: serverTimestamp(),
+      })
+      clientId = newRef.id
+    }
     setSaving(true)
     try {
       const client = clients.find(c => c.id === clientId)
@@ -351,11 +368,16 @@ export default function BonsCommandePage() {
               <div style={{ borderTop: '1px solid #e2e4ea', paddingTop: 16 }}>
                 <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Client</p>
                 <select value={acceptConfig.clientId} onChange={e => setAcceptConfig(c => ({ ...c, clientId: e.target.value }))}
-                  style={{ width: '100%', background: '#f0f2f7', border: '1.5px solid #e2e4ea', borderRadius: 8, padding: '10px 12px', fontSize: 14, marginBottom: 16, outline: 'none' }}
+                  style={{ width: '100%', background: '#f0f2f7', border: '1.5px solid #e2e4ea', borderRadius: 8, padding: '10px 12px', fontSize: 14, marginBottom: 4, outline: 'none' }}
                 >
-                  <option value="">— Choisir un client —</option>
+                  <option value="new">+ Nouveau client : {acceptConfig.bdc.clientNom || '—'}</option>
                   {clients.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
                 </select>
+                {acceptConfig.clientId === 'new' && (
+                  <p style={{ fontSize: 11, color: '#16a34a', fontWeight: 500, margin: '0 0 12px' }}>
+                    ✓ "{acceptConfig.bdc.clientNom}" sera créé automatiquement
+                  </p>
+                )}
 
                 <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Équipe pour ce chantier</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto', marginBottom: 16 }}>
@@ -390,9 +412,9 @@ export default function BonsCommandePage() {
                   })}
                 </div>
 
-                <button onClick={handleAccepter} disabled={saving || !acceptConfig.clientId || acceptConfig.selectedOuvriers.length === 0}
+                <button onClick={handleAccepter} disabled={saving || acceptConfig.selectedOuvriers.length === 0}
                   style={{
-                    width: '100%', background: (acceptConfig.clientId && acceptConfig.selectedOuvriers.length > 0) ? '#16a34a' : '#c8d3ee',
+                    width: '100%', background: acceptConfig.selectedOuvriers.length > 0 ? '#16a34a' : '#c8d3ee',
                     color: '#fff', border: 'none', borderRadius: 10, padding: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer',
                   }}
                 >{saving ? 'Création en cours…' : `✓ Créer chantier + facture + planning (${acceptConfig.selectedOuvriers.length} ouvrier${acceptConfig.selectedOuvriers.length > 1 ? 's' : ''})`}</button>
