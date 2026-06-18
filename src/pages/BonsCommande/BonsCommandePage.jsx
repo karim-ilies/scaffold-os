@@ -80,14 +80,31 @@ export default function BonsCommandePage() {
     } finally { setSaving(false) }
   }
 
-  async function handleAccepter(bdc) {
+  const [acceptConfig, setAcceptConfig] = useState(null)
+
+  function openAcceptFlow(bdc) {
+    const matchedClient = clients.find(c => c.nom?.toLowerCase().includes(bdc.clientNom?.toLowerCase()?.split(' ')[0] || '???'))
+    setAcceptConfig({
+      bdc,
+      clientId: matchedClient?.id || '',
+      selectedOuvriers: [],
+    })
+  }
+
+  async function handleAccepter() {
+    if (!acceptConfig) return
+    const { bdc, clientId, selectedOuvriers } = acceptConfig
     setSaving(true)
     try {
+      const client = clients.find(c => c.id === clientId)
+      const dateDebut = bdc.dateIntervention || new Date().toISOString().split('T')[0]
+
       const chantierRef = await addDoc(collection(db, 'chantiers'), {
         nom: bdc.chantierNom || bdc.description || '—',
+        clientId: clientId || null,
         adresse: { rue: bdc.chantierAdresse || '', cp: '', ville: '' },
         statut: 'en_cours',
-        dateDebut: bdc.dateIntervention || new Date().toISOString().split('T')[0],
+        dateDebut,
         bdcId: bdc.id,
         montantBDC: bdc.montantHT,
         avancement: 0,
@@ -98,7 +115,8 @@ export default function BonsCommandePage() {
       const factureRef = await addDoc(collection(db, 'factures'), {
         chantierId: chantierRef.id,
         chantierNom: bdc.chantierNom || bdc.description,
-        clientNom: bdc.clientNom,
+        clientId: clientId || null,
+        clientNom: client?.nom || bdc.clientNom,
         bdcId: bdc.id,
         statut: 'brouillon',
         dateEmission: serverTimestamp(),
@@ -114,7 +132,23 @@ export default function BonsCommandePage() {
         createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
       })
 
-      await accepterBDC(bdc.id, { chantierId: chantierRef.id, factureId: factureRef.id, equipe: [], jours: [] })
+      // Créer le planning pour l'équipe sélectionnée
+      for (const uid of selectedOuvriers) {
+        const o = actifs.find(a => a.id === uid)
+        await addDoc(collection(db, 'planning'), {
+          ouvrierUid: uid,
+          ouvrierNom: o ? `${o.prenom} ${o.nom}` : '',
+          ouvrierEmail: o?.email || '',
+          chantierId: chantierRef.id,
+          chantierNom: bdc.chantierNom || bdc.description || '',
+          chantierAdresse: bdc.chantierAdresse || '',
+          date: dateDebut,
+          createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+        })
+      }
+
+      await accepterBDC(bdc.id, { chantierId: chantierRef.id, factureId: factureRef.id, equipe: selectedOuvriers, jours: [dateDebut] })
+      setAcceptConfig(null)
       setSelectedBDC(null)
     } finally { setSaving(false) }
   }
@@ -302,14 +336,66 @@ export default function BonsCommandePage() {
               >📄 Voir le PDF original</a>
             )}
 
-            {selectedBDC.statut === 'nouveau' && (
+            {selectedBDC.statut === 'nouveau' && !acceptConfig && (
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => { refuserBDC(selectedBDC.id, 'Refusé'); setSelectedBDC(null) }}
                   style={{ flex: 1, background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
                 >✕ Refuser</button>
-                <button onClick={() => handleAccepter(selectedBDC)} disabled={saving}
+                <button onClick={() => openAcceptFlow(selectedBDC)}
                   style={{ flex: 2, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, padding: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
-                >{saving ? 'Création…' : '✓ Accepter — créer chantier + facture'}</button>
+                >✓ Accepter ce BDC →</button>
+              </div>
+            )}
+
+            {acceptConfig && acceptConfig.bdc.id === selectedBDC.id && (
+              <div style={{ borderTop: '1px solid #e2e4ea', paddingTop: 16 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Client</p>
+                <select value={acceptConfig.clientId} onChange={e => setAcceptConfig(c => ({ ...c, clientId: e.target.value }))}
+                  style={{ width: '100%', background: '#f0f2f7', border: '1.5px solid #e2e4ea', borderRadius: 8, padding: '10px 12px', fontSize: 14, marginBottom: 16, outline: 'none' }}
+                >
+                  <option value="">— Choisir un client —</option>
+                  {clients.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+                </select>
+
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Équipe pour ce chantier</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto', marginBottom: 16 }}>
+                  {actifs.map(o => {
+                    const sel = acceptConfig.selectedOuvriers.includes(o.id)
+                    return (
+                      <button key={o.id}
+                        onClick={() => setAcceptConfig(c => ({
+                          ...c,
+                          selectedOuvriers: sel ? c.selectedOuvriers.filter(u => u !== o.id) : [...c.selectedOuvriers, o.id]
+                        }))}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
+                          border: sel ? '2px solid #16a34a' : '1.5px solid #e2e4ea',
+                          borderRadius: 8, background: sel ? '#dcfce7' : '#fff',
+                          cursor: 'pointer', textAlign: 'left',
+                        }}
+                      >
+                        <div style={{
+                          width: 26, height: 26, borderRadius: '50%', fontSize: 10, fontWeight: 700,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: o.role === 'chef_equipe' ? '#0d3580' : '#e8edf8',
+                          color: o.role === 'chef_equipe' ? '#fff' : '#0d3580', flexShrink: 0,
+                        }}>{o.prenom?.[0]}{o.nom?.[0]}</div>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 13, fontWeight: 500, color: '#111', margin: 0 }}>{o.prenom} {o.nom}</p>
+                          <p style={{ fontSize: 10, color: '#9ca3af', margin: 0 }}>{o.role === 'chef_equipe' ? 'Chef' : 'Ouvrier'}</p>
+                        </div>
+                        {sel && <span style={{ fontSize: 14, color: '#16a34a' }}>✓</span>}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <button onClick={handleAccepter} disabled={saving || !acceptConfig.clientId || acceptConfig.selectedOuvriers.length === 0}
+                  style={{
+                    width: '100%', background: (acceptConfig.clientId && acceptConfig.selectedOuvriers.length > 0) ? '#16a34a' : '#c8d3ee',
+                    color: '#fff', border: 'none', borderRadius: 10, padding: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                  }}
+                >{saving ? 'Création en cours…' : `✓ Créer chantier + facture + planning (${acceptConfig.selectedOuvriers.length} ouvrier${acceptConfig.selectedOuvriers.length > 1 ? 's' : ''})`}</button>
               </div>
             )}
 
