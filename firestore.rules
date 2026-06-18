@@ -154,5 +154,13 @@ service cloud.firestore {
       allow read:  if isAuth()
       allow write: if isPatron()
     }
+
+    // BONS DE COMMANDE
+    match /bons_commande/{id} {
+      allow read:   if isPatron()
+      allow create: if isPatron()
+      allow update: if isPatron()
+      allow delete: if false
+    }
   }
 }

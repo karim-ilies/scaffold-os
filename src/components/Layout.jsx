@@ -29,6 +29,7 @@ import GetAppIcon           from '@mui/icons-material/GetApp'
 const NAV_ITEMS = {
   patron: [
     { to: '/dashboard',    icon: <DashboardIcon />,              label: 'Dashboard' },
+    { to: '/bons-commande', icon: <DescriptionIcon />,           label: 'Bons de commande' },
     { to: '/chantiers',    icon: <ConstructionIcon />,           label: 'Chantiers' },
     { to: '/clients',      icon: <PersonIcon />,                 label: 'Clients' },
     { to: '/factures',     icon: <DescriptionIcon />,            label: 'Factures' },

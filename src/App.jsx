@@ -29,6 +29,7 @@ import FichesMensuelles   from './pages/Personnel/FichesMensuelles'
 import PlanningPage       from './pages/Personnel/PlanningPage'
 import EquipesPage        from './pages/Personnel/EquipesPage'
 import SeedPage           from './pages/Seed/SeedPage'
+import BonsCommandePage   from './pages/BonsCommande/BonsCommandePage'
 
 function PL({ children, allowedRoles = [] }) {
   return (
@@ -70,6 +71,11 @@ export default function App() {
           } />
 
           {/* Chantiers — tous */}
+          <Route path="/bons-commande" element={
+            <PL allowedRoles={['patron']}>
+              <BonsCommandePage />
+            </PL>
+          } />
           <Route path="/chantiers" element={
             <PL allowedRoles={['patron', 'chef_equipe', 'ouvrier', 'comptable']}>
               <ChantiersPage />
