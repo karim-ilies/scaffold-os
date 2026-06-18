@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useMemo, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useFactures } from '../../hooks/useFactures'
 import { useClients }  from '../../hooks/useClients'
 import { formatEuro, formatDate, formatStatut } from '../../utils/formatters'
@@ -18,7 +18,17 @@ export default function FacturesPage() {
   const { factures, loading } = useFactures()
   const { clients }           = useClients()
   const navigate              = useNavigate()
+  const location              = useLocation()
   const [wizardOpen,    setWizardOpen]    = useState(false)
+  const [voiceData,     setVoiceData]    = useState(null)
+
+  useEffect(() => {
+    if (location.state?.voiceData) {
+      setVoiceData(location.state.voiceData)
+      setWizardOpen(true)
+      window.history.replaceState({}, '')
+    }
+  }, [location.state])
   const [search,        setSearch]        = useState('')
   const [filtreStatut,  setFiltreStatut]  = useState('')
   const [showArchives,  setShowArchives]  = useState(false)
@@ -49,7 +59,7 @@ export default function FacturesPage() {
 
   const nbArchivees = useMemo(() => factures.filter(f => f.statut === 'archivee').length, [factures])
 
-  if (wizardOpen) return <FactureWizard onClose={() => setWizardOpen(false)} mode="facture" />
+  if (wizardOpen) return <FactureWizard onClose={() => { setWizardOpen(false); setVoiceData(null) }} mode="facture" voiceData={voiceData} />
 
   return (
     <div style={{ background: '#F7F8FA', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>

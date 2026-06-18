@@ -16,6 +16,7 @@ import Skeleton, { SkeletonCard } from '../../components/ui/Skeleton'
 import { TresorerieChart } from '../../components/ui/charts/TresorerieChart'
 import { CAParClientChart } from '../../components/ui/charts/CAParClientChart'
 import { useResponsive } from '../../hooks/useResponsive'
+import { VoiceButton, VoiceInvoiceModal } from '../../components/VoiceInvoice'
 import TrendingUpIcon    from '@mui/icons-material/TrendingUp'
 import WarningIcon       from '@mui/icons-material/Warning'
 import ConstructionIcon  from '@mui/icons-material/Construction'
@@ -66,6 +67,7 @@ export default function DashboardPage() {
   const [factures,    setFactures]    = useState([])
   const [pointagesJ,  setPointagesJ]  = useState([])
   const [activite,    setActivite]    = useState([])
+  const [voiceOpen,   setVoiceOpen]   = useState(false)
   const [loading,     setLoading]     = useState(true)
 
   useEffect(() => {
@@ -282,6 +284,19 @@ export default function DashboardPage() {
           <MonPlanningWidget userId={user.uid} style={{ marginTop: 14 }} />
         )}
       </div>
+
+      {isPatron && <VoiceButton onClick={() => setVoiceOpen(true)} />}
+      {voiceOpen && (
+        <VoiceInvoiceModal
+          clients={clients}
+          chantiers={chantiers}
+          onClose={() => setVoiceOpen(false)}
+          onResult={(data) => {
+            setVoiceOpen(false)
+            navigate('/factures', { state: { voiceData: data } })
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -59,3 +59,77 @@ exports.analyseTicket = onCall(
     }
   }
 )
+
+exports.factureVocale = onCall(
+  { region: 'europe-west1', secrets: [anthropicKey] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Vous devez être connecté.')
+    }
+
+    const { transcription, clients, chantiers } = request.data
+    if (!transcription) {
+      throw new HttpsError('invalid-argument', 'transcription requise.')
+    }
+
+    const clientsListe = (clients || []).map(c => c.nom).join(', ')
+    const chantiersListe = (chantiers || []).map(c => `${c.nom} (client: ${c.clientNom || '?'})`).join(', ')
+
+    const apiKey = anthropicKey.value()
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 512,
+        messages: [{
+          role: 'user',
+          content: `Tu es un assistant de facturation pour une entreprise d'échafaudage.
+Le patron vient de dicter une facture vocalement. Voici la transcription :
+"${transcription}"
+
+Clients existants : ${clientsListe || 'aucun'}
+Chantiers existants : ${chantiersListe || 'aucun'}
+
+Extrais les informations et retourne UNIQUEMENT un objet JSON valide (sans markdown) avec :
+{
+  "clientNom": "nom exact du client existant ou null",
+  "chantierNom": "nom exact du chantier existant ou null",
+  "type": "regie" ou "forfait",
+  "description": "description courte de la prestation",
+  "nbOuvriers": nombre ou null,
+  "nbJours": nombre ou null,
+  "tauxJournalier": nombre en euros ou null,
+  "montantForfait": nombre en euros si forfait ou null,
+  "notes": "toute info supplémentaire mentionnée"
+}
+
+Règles :
+- Si le patron dit "3 ouvriers pendant 4 jours", c'est type "regie"
+- Si le patron donne un montant global, c'est type "forfait"
+- Cherche le client et chantier les plus proches dans les listes existantes
+- Si tu n'es pas sûr d'un champ, mets null`
+        }],
+      }),
+    })
+
+    if (!resp.ok) {
+      throw new HttpsError('internal', `Anthropic error ${resp.status}`)
+    }
+
+    const json = await resp.json()
+    const text = json.content?.[0]?.text || '{}'
+    const match = text.match(/\{[\s\S]*\}/)
+
+    try {
+      return JSON.parse(match?.[0] || '{}')
+    } catch {
+      return {}
+    }
+  }
+)

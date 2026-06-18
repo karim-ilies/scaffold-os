@@ -34,18 +34,28 @@ const LIGNE_VIDE_FORFAIT = (type = 'forfait', tauxTVA = 0.20) => ({
   montantHT: 0, montantTVA: 0, montantTTC: 0,
 })
 
-export default function FactureWizard({ onClose, mode = 'facture', devisSource = null }) {
+export default function FactureWizard({ onClose, mode = 'facture', devisSource = null, voiceData = null }) {
   const { creerFacture }   = useFactures()
   const { clients }        = useClients()
   const { chantiers }      = useChantiers()
   const { parametres }     = useParametres()
 
-  const [etape,      setEtape]     = useState(0)
+  const [etape,      setEtape]     = useState(voiceData?.clientId ? 1 : 0)
   const [saving,     setSaving]    = useState(false)
-  const [clientId,   setClientId]  = useState(devisSource?.clientId || '')
-  const [chantierId, setChantierId]= useState(devisSource?.chantierId || '')
+  const [clientId,   setClientId]  = useState(devisSource?.clientId || voiceData?.clientId || '')
+  const [chantierId, setChantierId]= useState(devisSource?.chantierId || voiceData?.chantierId || '')
   const [estSousTraitance, setEstSousTraitance] = useState(false)
-  const [lignes,     setLignes]    = useState(devisSource?.lignes || [])
+
+  const voiceLigne = voiceData ? (() => {
+    if (voiceData.type === 'regie') {
+      return [LIGNE_VIDE_REGIE(voiceData.tauxJournalier || parametres?.tauxJournauxDefaut?.ouvrier || 220, 0.20)]
+        .map(l => ({ ...l, description: voiceData.description || l.description, nbOuvriers: voiceData.nbOuvriers || l.nbOuvriers, nbJours: voiceData.nbJours || l.nbJours, tauxJournalier: voiceData.tauxJournalier || l.tauxJournalier }))
+    }
+    return [LIGNE_VIDE_FORFAIT('forfait', 0.20)]
+      .map(l => ({ ...l, description: voiceData.description || '', prixUnitaireHT: voiceData.montantForfait || 0 }))
+  })() : null
+
+  const [lignes, setLignes] = useState(devisSource?.lignes || voiceLigne || [])
   const [dateEmission,  setDateEmission]  = useState(new Date().toISOString().split('T')[0])
   const [dateEcheance,  setDateEcheance]  = useState(addDays(new Date(), 30).toISOString().split('T')[0])
   const [dateValidite,  setDateValidite]  = useState(addDays(new Date(), 15).toISOString().split('T')[0])
