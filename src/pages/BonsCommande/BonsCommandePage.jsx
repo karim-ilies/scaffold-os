@@ -4,6 +4,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore'
 import app, { db, storage } from '../../firebase/config'
+import { getNextNumero } from '../../firebase/helpers'
 import { useBonsCommande } from '../../hooks/useBonsCommande'
 import { useClients } from '../../hooks/useClients'
 import { useChantiers } from '../../hooks/useChantiers'
@@ -142,7 +143,10 @@ export default function BonsCommandePage() {
         createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
       })
 
+      const numero = await getNextNumero('factures', 'FAC')
+
       const factureRef = await addDoc(collection(db, 'factures'), {
+        numero,
         chantierId: chantierRef.id,
         chantierNom: bdc.chantierNom || bdc.description,
         clientId: clientId || null,
@@ -150,6 +154,7 @@ export default function BonsCommandePage() {
         bdcId: bdc.id,
         statut: 'brouillon',
         dateEmission: serverTimestamp(),
+        dateEcheance: (() => { const d = new Date(); d.setDate(d.getDate() + 30); return d })(),
         lignes: [{
           id: '001', type: 'bdc',
           description: `${bdc.chantierNom || ''} — Montage démontage`,
