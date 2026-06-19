@@ -303,12 +303,27 @@ export function useNotifications() {
   }, [uid, role])
 
   // ── Actions ──────────────────────────────────────────────────────────────
+  // Sync entre instances via custom event
+  useEffect(() => {
+    function handleSync() {
+      if (uid) {
+        setLues(loadSet(LS_LUES(uid)))
+        setDismissed(loadSet(LS_DISM(uid)))
+      }
+    }
+    window.addEventListener('notif-sync', handleSync)
+    return () => window.removeEventListener('notif-sync', handleSync)
+  }, [uid])
+
+  function emitSync() { window.dispatchEvent(new Event('notif-sync')) }
+
   const marquerLue = useCallback((id) => {
     setLues(prev => {
       const next = new Set([...prev, id])
       if (uid) saveSet(LS_LUES(uid), next)
       return next
     })
+    setTimeout(emitSync, 50)
   }, [uid])
 
   const marquerToutesLues = useCallback(() => {
@@ -318,6 +333,7 @@ export function useNotifications() {
       if (uid) saveSet(LS_LUES(uid), next)
       return next
     })
+    setTimeout(emitSync, 50)
   }, [uid, rawNotifs])
 
   const supprimerNotification = useCallback((id) => {
@@ -326,6 +342,7 @@ export function useNotifications() {
       if (uid) saveSet(LS_DISM(uid), next)
       return next
     })
+    setTimeout(emitSync, 50)
   }, [uid])
 
   // Filtrer les dismissed et enrichir avec lue
