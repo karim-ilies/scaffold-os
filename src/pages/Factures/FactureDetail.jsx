@@ -318,16 +318,24 @@ export default function FactureDetail() {
         </Card>
 
         {/* Totaux */}
+        {(() => {
+          const lignesAff = editing && editLignes ? editLignes : facture.lignes || []
+          const tHT  = lignesAff.reduce((s, l) => s + (l.montantHT || 0), 0)
+          const tTVA = lignesAff.reduce((s, l) => s + (l.montantTVA || 0), 0)
+          const tTTC = tHT + tTVA
+          return (
         <div style={{ background: '#0d3580', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
-          <TotalRow label="Total HT"  value={facture.totalHT}  small />
-          <TotalRow label={`TVA (${formatTauxTVA(facture.lignes?.[0]?.tauxTVA ?? 0.20)})`} value={facture.totalTVA} small />
+          <TotalRow label="Total HT"  value={tHT}  small />
+          <TotalRow label={`TVA (${formatTauxTVA(lignesAff[0]?.tauxTVA ?? 0.20)})`} value={tTVA} small />
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', margin: '10px 0' }} />
-          <TotalRow label="Total TTC" value={facture.totalTTC} big />
+          <TotalRow label="Total TTC" value={tTTC} big />
           {(facture.totalPaye || 0) > 0 && <>
             <TotalRow label="Déjà payé"      value={facture.totalPaye} small green />
             <TotalRow label="Solde restant"  value={facture.solde}     small red />
           </>}
         </div>
+          )
+        })()}
 
         {/* Paiements */}
         {(facture.paiements || []).length > 0 && (
