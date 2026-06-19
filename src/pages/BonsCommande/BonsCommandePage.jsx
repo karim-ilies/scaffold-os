@@ -91,13 +91,14 @@ export default function BonsCommandePage() {
     setAcceptConfig({
       bdc,
       clientId: matchedClient?.id || 'new',
+      nbJours: bdc.nbJours || 1,
       selectedOuvriers: [],
     })
   }
 
   async function handleAccepter() {
     if (!acceptConfig) return
-    let { bdc, clientId, selectedOuvriers } = acceptConfig
+    let { bdc, clientId, selectedOuvriers, nbJours: nbJoursConfig } = acceptConfig
 
     // Créer le client s'il est nouveau
     if (clientId === 'new' && bdc.clientNom) {
@@ -151,7 +152,7 @@ export default function BonsCommandePage() {
 
       // Calculer les jours du chantier
       const jours = [dateDebut]
-      const nbJoursIA = bdc.nbJours || 1
+      const nbJoursIA = nbJoursConfig || bdc.nbJours || 1
       if (bdc.dateFin && bdc.dateFin !== dateDebut) {
         const start = new Date(dateDebut + 'T12:00:00')
         const end = new Date(bdc.dateFin + 'T12:00:00')
@@ -398,6 +399,17 @@ export default function BonsCommandePage() {
                     ✓ "{acceptConfig.bdc.clientNom}" sera créé automatiquement
                   </p>
                 )}
+
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Nombre de jours</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                  <input type="number" min="1" max="30" value={acceptConfig.nbJours}
+                    onChange={e => setAcceptConfig(c => ({ ...c, nbJours: parseInt(e.target.value) || 1 }))}
+                    style={{ width: 70, background: '#f0f2f7', border: '1.5px solid #e2e4ea', borderRadius: 8, padding: '10px 12px', fontSize: 16, fontWeight: 700, textAlign: 'center', outline: 'none' }}
+                  />
+                  <span style={{ fontSize: 13, color: '#6b7280' }}>
+                    jour{acceptConfig.nbJours > 1 ? 's' : ''} à partir du {acceptConfig.bdc.dateIntervention || '—'}
+                  </span>
+                </div>
 
                 <p style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Équipe pour ce chantier</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto', marginBottom: 16 }}>
