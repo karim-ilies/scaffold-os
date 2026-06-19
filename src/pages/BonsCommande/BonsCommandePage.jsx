@@ -456,8 +456,22 @@ export default function BonsCommandePage() {
             )}
 
             {selectedBDC.statut === 'accepte' && (
-              <div style={{ background: '#dcfce7', borderRadius: 10, padding: 12, textAlign: 'center' }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#16a34a', margin: 0 }}>✓ Accepté — chantier et facture créés</p>
+              <div>
+                <div style={{ background: '#dcfce7', borderRadius: 10, padding: 12, textAlign: 'center', marginBottom: 10 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#16a34a', margin: 0 }}>✓ Accepté</p>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {selectedBDC.factureId && (
+                    <button onClick={() => { setSelectedBDC(null); navigate(`/factures/${selectedBDC.factureId}`) }}
+                      style={{ flex: 1, background: '#0d3580', color: '#fff', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                    >🧾 Voir / modifier la facture</button>
+                  )}
+                  {selectedBDC.chantierId && (
+                    <button onClick={() => { setSelectedBDC(null); navigate(`/chantiers/${selectedBDC.chantierId}`) }}
+                      style={{ flex: 1, background: '#e8edf8', color: '#0d3580', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                    >🏗 Voir le chantier</button>
+                  )}
+                </div>
               </div>
             )}
 
