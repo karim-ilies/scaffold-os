@@ -22,6 +22,7 @@ import GroupsIcon           from '@mui/icons-material/Groups'
 import LogoutIcon           from '@mui/icons-material/Logout'
 import PersonIcon           from '@mui/icons-material/Person'
 import MenuIcon             from '@mui/icons-material/Menu'
+import NotificationsIcon    from '@mui/icons-material/Notifications'
 import CloseIcon            from '@mui/icons-material/Close'
 import NotificationPanel    from './NotificationPanel'
 import GetAppIcon           from '@mui/icons-material/GetApp'
@@ -66,7 +67,7 @@ const NAV_ITEMS = {
 
 // Bottom nav par rôle (mobile — max 4 items)
 const MOBILE_NAV = {
-  patron:      ['/factures', '/chantiers', '/pointage', '/tickets'],
+  patron:      ['/factures', '/chantiers', '/pointage'],
   chef_equipe: ['/chantiers', '/pointage', '/tickets', '/planning'],
   ouvrier:     ['/pointage', '/chantiers', '/tickets'],
   comptable:   ['/factures', '/tresorerie', '/comptabilite'],
@@ -141,11 +142,11 @@ function DesktopLayout({ children, items, onLogout, user, role }) {
 
 function MobileLayout({ children, items, allItems, onLogout, user }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#F7F8FA' }}>
       <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 72 }}><PageTransition>{children}</PageTransition></main>
-      <NotificationPanel placement="mobile" />
       <InstallBanner />
 
       {/* Barre du bas */}
@@ -175,6 +176,24 @@ function MobileLayout({ children, items, allItems, onLogout, user }) {
           </NavLink>
         ))}
 
+        {/* Bouton Notifications */}
+        <button
+          onClick={() => setNotifOpen(o => !o)}
+          style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 2, padding: '6px 4px', border: 'none',
+            background: notifOpen ? '#e8edf8' : 'transparent',
+            cursor: 'pointer', position: 'relative',
+            color: notifOpen ? '#0d3580' : '#9ca3af',
+            fontSize: 10, fontWeight: notifOpen ? '600' : '400',
+            borderRadius: 10, margin: '4px 3px',
+          }}
+        >
+          <NotificationsIcon style={{ fontSize: 22 }} />
+          Alertes
+        </button>
+
         {/* Bouton Menu */}
         <button
           onClick={() => setMenuOpen(true)}
@@ -193,6 +212,9 @@ function MobileLayout({ children, items, allItems, onLogout, user }) {
           Menu
         </button>
       </nav>
+
+      {/* Panneau notifications */}
+      {notifOpen && <NotificationPanel placement="mobile" />}
 
       {/* Overlay menu plein écran */}
       {menuOpen && (
