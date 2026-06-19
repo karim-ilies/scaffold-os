@@ -25,6 +25,7 @@ import MenuIcon             from '@mui/icons-material/Menu'
 import NotificationsIcon    from '@mui/icons-material/Notifications'
 import CloseIcon            from '@mui/icons-material/Close'
 import NotificationPanel    from './NotificationPanel'
+import { useNotifications } from '../hooks/useNotifications'
 import GetAppIcon           from '@mui/icons-material/GetApp'
 
 const NAV_ITEMS = {
@@ -143,6 +144,7 @@ function DesktopLayout({ children, items, onLogout, user, role }) {
 function MobileLayout({ children, items, allItems, onLogout, user }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
+  const { nbNonLues } = useNotifications()
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#F7F8FA' }}>
@@ -190,7 +192,18 @@ function MobileLayout({ children, items, allItems, onLogout, user }) {
             borderRadius: 10, margin: '4px 3px',
           }}
         >
-          <NotificationsIcon style={{ fontSize: 22 }} />
+          <span style={{ position: 'relative', display: 'flex' }}>
+            <NotificationsIcon style={{ fontSize: 22 }} />
+            {nbNonLues > 0 && (
+              <span style={{
+                position: 'absolute', top: -4, right: -6,
+                background: '#dc2626', color: '#fff',
+                fontSize: 8, fontWeight: 700, lineHeight: 1,
+                padding: '2px 4px', borderRadius: 10, minWidth: 14,
+                textAlign: 'center', border: '2px solid #fff',
+              }}>{nbNonLues > 99 ? '99+' : nbNonLues}</span>
+            )}
+          </span>
           Alertes
         </button>
 
