@@ -148,27 +148,35 @@ exports.lireBDC = onCall(
       : { type: 'image', source: { type: 'base64', media_type: mimeType, data: pdfBase64 } }
 
     const prompt = `Tu lis un bon de commande (BDC) de travaux d'echafaudage en France.
+
+ATTENTION — il y a 3 entites dans ce document :
+1. LE CLIENT (celui qui ENVOIE le BDC) = l'entreprise dont le logo est en haut, ou dont les infos sont en pied de page (SIRET, adresse siege). C'est LUI qui paie. Exemples : J4R Echafaudages, ENEDIS, Bouygues...
+2. LE DESTINATAIRE (section "Adresse a" ou "A l'attention de") = c'est nous (YM SERVICE / Mr BOUGHAZI). IGNORE cette section.
+3. LE CHANTIER (section "Chantier") = le lieu des travaux. C'est souvent le client du client.
+
 Extrais TOUTES les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
 {
-  "clientNom": "nom de l'entreprise qui envoie le BDC",
-  "clientAdresse": "adresse complete du client (rue, CP, ville)",
-  "clientEmail": "email du client si present",
-  "clientTel": "telephone du client si present",
-  "clientSiret": "numero SIRET ou TVA intra si present",
-  "chantierNom": "nom ou reference du chantier",
-  "chantierAdresse": "adresse du chantier",
-  "dateIntervention": "YYYY-MM-DD (premiere date mentionnee)",
-  "dateFin": "YYYY-MM-DD (derniere date si periode, sinon null)",
-  "nbJours": nombre de jours de travail prevus (1 si non precise),
+  "clientNom": "nom de l'entreprise qui ENVOIE le BDC (logo, en-tete, pied de page)",
+  "clientAdresse": "adresse du SIEGE du client (PAS l'adresse du chantier)",
+  "clientEmail": "email du client (en-tete ou pied de page)",
+  "clientTel": "telephone du client",
+  "clientSiret": "SIRET ou TVA intra du client",
+  "chantierNom": "nom ou reference du chantier (section Chantier)",
+  "chantierAdresse": "adresse du CHANTIER (lieu des travaux)",
+  "dateIntervention": "YYYY-MM-DD",
+  "dateFin": "YYYY-MM-DD (si periode, sinon null)",
+  "nbJours": nombre de jours prevus (1 si non precise),
   "description": "description courte des travaux",
   "montantHT": nombre en euros,
   "tauxTVA": 0.20 ou 0.10 ou 0,
   "montantTVA": nombre en euros,
   "montantTTC": nombre en euros
 }
-IMPORTANT : si le document mentionne une duree (ex: "5 jours", "du 29 juin au 3 juillet"), calcule dateFin et nbJours.
-Cherche l'email, telephone et SIRET du client partout dans le document (en-tete, pied de page, tampon).
-Si une info est absente, mets null.`
+IMPORTANT :
+- Le CLIENT n'est PAS "YM SERVICE" ni "BOUGHAZI" — c'est l'autre entreprise.
+- Si une duree est mentionnee, calcule dateFin et nbJours.
+- Cherche le SIRET, email et tel du client dans le pied de page du document.
+- Si une info est absente, mets null.`
 
     let resp
     try {
