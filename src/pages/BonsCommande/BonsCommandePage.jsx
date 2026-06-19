@@ -151,6 +151,7 @@ export default function BonsCommandePage() {
 
       // Calculer les jours du chantier
       const jours = [dateDebut]
+      const nbJoursIA = bdc.nbJours || 1
       if (bdc.dateFin && bdc.dateFin !== dateDebut) {
         const start = new Date(dateDebut + 'T12:00:00')
         const end = new Date(bdc.dateFin + 'T12:00:00')
@@ -158,10 +159,12 @@ export default function BonsCommandePage() {
           const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
           if (!jours.includes(iso)) jours.push(iso)
         }
-      } else if (bdc.description?.match(/2\s*jours|deux\s*jours/i) || bdc.chantierNom?.match(/2\s*jours|deux\s*jours/i)) {
-        const next = new Date(dateDebut + 'T12:00:00')
-        next.setDate(next.getDate() + 1)
-        jours.push(`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`)
+      } else if (nbJoursIA > 1) {
+        for (let i = 1; i < nbJoursIA; i++) {
+          const d = new Date(dateDebut + 'T12:00:00')
+          d.setDate(d.getDate() + i)
+          jours.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)
+        }
       }
 
       // Créer le planning pour chaque ouvrier × chaque jour

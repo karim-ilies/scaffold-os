@@ -154,13 +154,16 @@ Extrais les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
   "clientAdresse": "adresse complete du client",
   "chantierNom": "nom ou reference du chantier",
   "chantierAdresse": "adresse du chantier",
-  "dateIntervention": "YYYY-MM-DD",
+  "dateIntervention": "YYYY-MM-DD (premiere date mentionnee)",
+  "dateFin": "YYYY-MM-DD (derniere date si periode, sinon null)",
+  "nbJours": nombre de jours de travail prevus (1 si non precise),
   "description": "description courte des travaux",
   "montantHT": nombre en euros,
   "tauxTVA": 0.20 ou 0.10 ou 0,
   "montantTVA": nombre en euros,
   "montantTTC": nombre en euros
 }
+IMPORTANT : si le document mentionne une duree (ex: "5 jours", "du 29 juin au 3 juillet"), calcule dateFin et nbJours.
 Si une info est absente, mets null.`
 
     let resp
