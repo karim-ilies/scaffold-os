@@ -32,6 +32,15 @@ const COULEURS = ['#4f46e5', '#0d9488', '#c2410c', '#7c3aed', '#d97706', '#1d4ed
 const couleurChantier = (id) => COULEURS[parseInt(id?.slice(-2), 16) % COULEURS.length] || '#0d3580'
 const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 
+function snapCenterToCursor({ transform, activatorEvent, activeNodeRect }) {
+  if (!activatorEvent || !activeNodeRect) return transform
+  return {
+    ...transform,
+    x: transform.x + (activatorEvent.clientX - activeNodeRect.left - activeNodeRect.width / 2),
+    y: transform.y + (activatorEvent.clientY - activeNodeRect.top - activeNodeRect.height / 2),
+  }
+}
+
 // ─── Draggable components ────────────────────────────────────────────────────
 
 function DraggableWorkerChip({ id, entry, ouvrier, onRetirer, saving }) {
@@ -492,7 +501,7 @@ export default function PlanningPage() {
           ))}
         </div>
 
-        <DragOverlay dropAnimation={{ duration: 200, easing: 'ease' }}>
+        <DragOverlay dropAnimation={{ duration: 200, easing: 'ease' }} modifiers={[snapCenterToCursor]}>
           {renderOverlay()}
         </DragOverlay>
       </DndContext>
