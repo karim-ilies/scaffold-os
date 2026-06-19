@@ -327,17 +327,22 @@ export default function BonsCommandePage() {
               <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111', margin: '0 0 8px' }}>Tout est créé !</h2>
               <p style={{ fontSize: 14, color: '#6b7280', margin: '0 0 4px' }}>Client + Chantier + Planning + Facture {extractedData.numero}</p>
               <p style={{ fontSize: 20, fontWeight: 700, color: '#0d3580', margin: '8px 0 20px' }}>{formatEuro(extractedData.montantTTC || 0)}</p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {extractedData.factureId && (
-                  <button onClick={() => navigate(`/factures/${extractedData.factureId}`)}
-                    style={{ flex: 1, background: '#0d3580', color: '#fff', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-                  >🧾 Voir la facture</button>
-                )}
-                {extractedData.chantierId && (
-                  <button onClick={() => navigate(`/chantiers/${extractedData.chantierId}`)}
-                    style={{ flex: 1, background: '#e8edf8', color: '#0d3580', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-                  >🏗 Voir le chantier</button>
-                )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {extractedData.factureId && (
+                    <button onClick={() => navigate(`/factures/${extractedData.factureId}`)}
+                      style={{ flex: 1, background: '#0d3580', color: '#fff', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                    >🧾 Facture</button>
+                  )}
+                  {extractedData.chantierId && (
+                    <button onClick={() => navigate(`/chantiers/${extractedData.chantierId}`)}
+                      style={{ flex: 1, background: '#e8edf8', color: '#0d3580', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                    >🏗 Chantier</button>
+                  )}
+                </div>
+                <button onClick={() => navigate('/planning')}
+                  style={{ width: '100%', background: '#dcfce7', color: '#16a34a', border: 'none', borderRadius: 10, padding: 12, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                >📅 Voir le planning</button>
               </div>
               <button onClick={resetFlow} style={{ marginTop: 12, background: 'transparent', color: '#6b7280', border: 'none', fontSize: 13, cursor: 'pointer' }}>← Importer un autre BDC</button>
             </div>

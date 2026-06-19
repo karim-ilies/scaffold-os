@@ -92,9 +92,11 @@ export default function FactureDetail() {
     await showModal({ type: 'info', title: 'Paiement enregistré !', message: `${facture.numero} · ${formatEuro(paiementData.montant)} reçu.` })
   }
 
+  const [emailPrompt, setEmailPrompt] = useState(null)
+
   async function handleEnvoyer() {
-    if (!client?.email) {
-      await showModal({ type: 'info', title: 'Email manquant', message: `${client?.nom || 'Ce client'} n'a pas d'adresse email renseignée. Ajoutez-la dans la fiche client.` })
+    if (!client?.email && !client?.contact?.email) {
+      setEmailPrompt({ clientId: client?.id || facture.clientId, clientNom: client?.nom || facture.clientNom || '—' })
       return
     }
     setSending(true)
@@ -179,37 +181,6 @@ export default function FactureDetail() {
           </span>
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
-          {peutPayer && (
-            <ActionBtn icon={<PaymentsIcon style={{ fontSize: 16 }} />} label="Marquer payée" color="#16a34a" onClick={() => setPaiementModal(true)} />
-          )}
-          <ActionBtn
-            icon={<SendIcon style={{ fontSize: 16 }} />}
-            label={sending ? 'Envoi…' : 'Envoyer'}
-            color="#E8A838"
-            onClick={handleEnvoyer}
-            disabled={sending}
-          />
-          <ActionBtn icon={<PictureAsPdfIcon style={{ fontSize: 16 }} />} label="PDF" color="rgba(255,255,255,0.85)" onClick={handleTelechargerPDF} />
-          <ActionBtn icon={<PrintIcon style={{ fontSize: 16 }} />} label="Imprimer" color="rgba(255,255,255,0.85)" onClick={handleImprimer} />
-          {facture.statut === 'brouillon' && !editing && (
-            <ActionBtn icon={<EditIcon style={{ fontSize: 16 }} />} label="Modifier" color="#60a5fa" onClick={() => { setEditing(true); setEditLignes(JSON.parse(JSON.stringify(facture.lignes || []))) }} />
-          )}
-          {editing && (
-            <ActionBtn icon={<SaveIcon style={{ fontSize: 16 }} />} label="Sauvegarder" color="#16a34a" onClick={async () => {
-              const totalHT = editLignes.reduce((s, l) => s + (l.montantHT || 0), 0)
-              const totalTVA = editLignes.reduce((s, l) => s + (l.montantTVA || 0), 0)
-              await updateDoc(doc(db, 'factures', id), { lignes: editLignes, totalHT, totalTVA, totalTTC: totalHT + totalTVA })
-              setFacture(f => ({ ...f, lignes: editLignes, totalHT, totalTVA, totalTTC: totalHT + totalTVA }))
-              setEditing(false)
-              await showModal({ type: 'info', title: 'Facture modifiée', message: 'Les modifications ont été enregistrées.' })
-            }} />
-          )}
-          {peutArchiver && (
-            <ActionBtn icon={<ArchiveIcon style={{ fontSize: 16 }} />} label="Archiver" color="#fca5a5" onClick={handleArchiver} />
-          )}
-        </div>
       </div>
 
       <div style={{ padding: isMobile ? '14px 14px 32px' : '20px 24px 40px', maxWidth: 820, margin: '0 auto' }}>
@@ -362,10 +333,74 @@ export default function FactureDetail() {
         )}
       </div>
 
+      {/* Modal saisie email manquant */}
+      {emailPrompt && (
+        <EmailPromptModal
+          clientNom={emailPrompt.clientNom}
+          onClose={() => setEmailPrompt(null)}
+          onSave={async (email) => {
+            if (emailPrompt.clientId) {
+              await updateDoc(doc(db, 'clients', emailPrompt.clientId), { email, 'contact.email': email })
+            }
+            setClient(prev => prev ? { ...prev, email, contact: { ...prev.contact, email } } : prev)
+            setEmailPrompt(null)
+            setTimeout(() => handleEnvoyer(), 300)
+          }}
+        />
+      )}
+
       {/* Modal email */}
       {emailModal && (
         <EmailModal data={emailModal} onClose={() => setEmailModal(null)} />
       )}
+
+      {/* ─── FOOTER STICKY ─── */}
+      <div style={{
+        position: 'sticky', bottom: 0, left: 0, right: 0,
+        background: '#fff', borderTop: '1px solid #e2e4ea',
+        padding: '10px 16px', display: 'flex', gap: 8,
+        overflowX: 'auto', zIndex: 50,
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.06)',
+      }}>
+        {editing ? (
+          <>
+            <button onClick={() => setEditing(false)} style={{ padding: '10px 16px', background: '#f0f2f7', color: '#6b7280', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>Annuler</button>
+            <button onClick={async () => {
+              const totalHT = editLignes.reduce((s, l) => s + (l.montantHT || 0), 0)
+              const totalTVA = editLignes.reduce((s, l) => s + (l.montantTVA || 0), 0)
+              await updateDoc(doc(db, 'factures', id), { lignes: editLignes, totalHT, totalTVA, totalTTC: totalHT + totalTVA })
+              setFacture(f => ({ ...f, lignes: editLignes, totalHT, totalTVA, totalTTC: totalHT + totalTVA }))
+              setEditing(false)
+              await showModal({ type: 'info', title: 'Facture modifiée', message: 'Les modifications ont été enregistrées.' })
+            }} style={{ flex: 1, padding: '10px 16px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              ✓ Sauvegarder
+            </button>
+          </>
+        ) : (
+          <>
+            {facture.statut === 'brouillon' && (
+              <button onClick={() => { setEditing(true); setEditLignes(JSON.parse(JSON.stringify(facture.lignes || []))) }}
+                style={{ padding: '10px 14px', background: '#e8edf8', color: '#0d3580', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                ✏️ Modifier
+              </button>
+            )}
+            <button onClick={handleEnvoyer} disabled={sending}
+              style={{ flex: 1, padding: '10px 16px', background: '#E8A838', color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {sending ? 'Envoi…' : '📩 Envoyer'}
+            </button>
+            {peutPayer && (
+              <button onClick={() => setPaiementModal(true)}
+                style={{ padding: '10px 14px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                💰 Payée
+              </button>
+            )}
+            <button onClick={handleTelechargerPDF}
+              style={{ padding: '10px 14px', background: '#f0f2f7', color: '#374151', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              PDF
+            </button>
+          </>
+        )}
+      </div>
 
       {/* Modal paiement */}
       {paiementModal && (
@@ -375,6 +410,28 @@ export default function FactureDetail() {
           onConfirm={handleMarquerPayee}
         />
       )}
+    </div>
+  )
+}
+
+// ─── Modal saisie email manquant ─────────────────────────────────────────────
+function EmailPromptModal({ clientNom, onClose, onSave }) {
+  const [email, setEmail] = useState('')
+  const valid = email.includes('@') && email.includes('.')
+  return (
+    <div onClick={e => { if (e.target === e.currentTarget) onClose() }} style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: '#fff', borderRadius: 16, padding: 24, width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
+        <h3 style={{ fontSize: 17, fontWeight: 700, color: '#111', margin: '0 0 6px' }}>Email manquant</h3>
+        <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 16px' }}>{clientNom} n'a pas d'email. Saisissez-le pour envoyer la facture.</p>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@client.fr" autoFocus
+          style={{ width: '100%', boxSizing: 'border-box', background: '#f0f2f7', border: '1.5px solid #e2e4ea', borderRadius: 8, padding: '12px 14px', fontSize: 15, outline: 'none', marginBottom: 16 }} />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={onClose} style={{ flex: 1, background: '#f0f2f7', color: '#6b7280', border: 'none', borderRadius: 10, padding: 12, fontSize: 13, cursor: 'pointer' }}>Annuler</button>
+          <button onClick={() => valid && onSave(email)} disabled={!valid}
+            style={{ flex: 2, background: valid ? '#0d3580' : '#c8d3ee', color: '#fff', border: 'none', borderRadius: 10, padding: 12, fontSize: 14, fontWeight: 600, cursor: valid ? 'pointer' : 'not-allowed' }}
+          >Enregistrer et envoyer</button>
+        </div>
+      </div>
     </div>
   )
 }
