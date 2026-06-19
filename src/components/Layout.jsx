@@ -214,7 +214,7 @@ function MobileLayout({ children, items, allItems, onLogout, user }) {
       </nav>
 
       {/* Panneau notifications */}
-      {notifOpen && <NotificationPanel placement="mobile" />}
+      {notifOpen && <NotificationPanel placement="mobile" alwaysOpen onClose={() => setNotifOpen(false)} />}
 
       {/* Overlay menu plein écran */}
       {menuOpen && (

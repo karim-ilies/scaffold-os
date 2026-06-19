@@ -60,12 +60,12 @@ function grouperNotifs(notifs) {
 // ── Composant principal ──────────────────────────────────────────────────────
 // placement = 'sidebar'  → cloche inline dans la sidebar desktop (fond bleu, icône blanche)
 // placement = 'mobile'   → cloche fixed bottom-right (fond blanc, icône bleue)
-export default function NotificationPanel({ placement = 'mobile' }) {
+export default function NotificationPanel({ placement = 'mobile', alwaysOpen = false, onClose }) {
   const { notifications, nbNonLues, marquerLue, marquerToutesLues, supprimerNotification } = useNotifications()
   const { isMobile } = useResponsive()
   const { parametres } = useParametres()
   const navigate = useNavigate()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(alwaysOpen)
   const [relancingId, setRelancingId] = useState(null)
   const [relanceStatut, setRelanceStatut] = useState({}) // { [notifId]: 'ok' | 'err' }
 
@@ -90,7 +90,7 @@ export default function NotificationPanel({ placement = 'mobile' }) {
 
   function handleClick(notif) {
     marquerLue(notif.id)
-    setOpen(false)
+    handleClose()
     navigate(notif.lien)
   }
 
@@ -119,10 +119,12 @@ export default function NotificationPanel({ placement = 'mobile' }) {
 
   const groupes = grouperNotifs(notifications)
 
+  function handleClose() { setOpen(false); if (onClose) onClose() }
+
   return (
     <>
-      {/* Bouton cloche */}
-      <div style={bellWrapperStyle}>
+      {/* Bouton cloche — caché si alwaysOpen */}
+      {!alwaysOpen && <div style={bellWrapperStyle}>
         <button onClick={() => setOpen(o => !o)} style={bellBtnStyle} title="Notifications">
           {nbNonLues > 0
             ? <NotificationsActiveIcon style={{ fontSize: 20 }} />
@@ -148,12 +150,12 @@ export default function NotificationPanel({ placement = 'mobile' }) {
             </span>
           )}
         </button>
-      </div>
+      </div>}
 
       {/* Backdrop */}
-      {open && (
+      {(open || alwaysOpen) && (
         <div
-          onClick={() => setOpen(false)}
+          onClick={handleClose}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 10001 }}
         />
       )}
@@ -168,7 +170,7 @@ export default function NotificationPanel({ placement = 'mobile' }) {
         zIndex:     10002,
         display:    'flex',
         flexDirection: 'column',
-        transform:  open ? 'translateX(0)' : 'translateX(100%)',
+        transform:  (open || alwaysOpen) ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}>
@@ -190,7 +192,7 @@ export default function NotificationPanel({ placement = 'mobile' }) {
                 <DoneAllIcon style={{ fontSize: 18 }} />
               </button>
             )}
-            <button onClick={() => setOpen(false)}
+            <button onClick={handleClose}
               style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 7, padding: '5px 8px', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}>
               <CloseIcon style={{ fontSize: 18 }} />
             </button>
