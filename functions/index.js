@@ -148,10 +148,13 @@ exports.lireBDC = onCall(
       : { type: 'image', source: { type: 'base64', media_type: mimeType, data: pdfBase64 } }
 
     const prompt = `Tu lis un bon de commande (BDC) de travaux d'echafaudage en France.
-Extrais les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
+Extrais TOUTES les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
 {
   "clientNom": "nom de l'entreprise qui envoie le BDC",
-  "clientAdresse": "adresse complete du client",
+  "clientAdresse": "adresse complete du client (rue, CP, ville)",
+  "clientEmail": "email du client si present",
+  "clientTel": "telephone du client si present",
+  "clientSiret": "numero SIRET ou TVA intra si present",
   "chantierNom": "nom ou reference du chantier",
   "chantierAdresse": "adresse du chantier",
   "dateIntervention": "YYYY-MM-DD (premiere date mentionnee)",
@@ -164,6 +167,7 @@ Extrais les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
   "montantTTC": nombre en euros
 }
 IMPORTANT : si le document mentionne une duree (ex: "5 jours", "du 29 juin au 3 juillet"), calcule dateFin et nbJours.
+Cherche l'email, telephone et SIRET du client partout dans le document (en-tete, pied de page, tampon).
 Si une info est absente, mets null.`
 
     let resp

@@ -106,7 +106,8 @@ export default function BonsCommandePage() {
         nom: bdc.clientNom,
         type: 'pro',
         adresse: { rue: bdc.clientAdresse || '', cp: '', ville: '' },
-        contact: { nom: '', tel: '', email: '' },
+        contact: { nom: '', tel: bdc.clientTel || '', email: bdc.clientEmail || '' },
+        siret: bdc.clientSiret || '',
         actif: true,
         createdAt: serverTimestamp(),
       })
