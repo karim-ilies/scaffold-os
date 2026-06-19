@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getFunctions, httpsCallable } from 'firebase/functions'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore'
 import app, { db, storage } from '../../firebase/config'
 import { useBonsCommande } from '../../hooks/useBonsCommande'
 import { useClients } from '../../hooks/useClients'
@@ -100,7 +100,7 @@ export default function BonsCommandePage() {
     if (!acceptConfig) return
     let { bdc, clientId, selectedOuvriers, nbJours: nbJoursConfig } = acceptConfig
 
-    // Créer le client s'il est nouveau
+    // Créer le client s'il est nouveau, ou compléter les infos manquantes
     if (clientId === 'new' && bdc.clientNom) {
       const newRef = await addDoc(collection(db, 'clients'), {
         nom: bdc.clientNom,
@@ -112,6 +112,15 @@ export default function BonsCommandePage() {
         createdAt: serverTimestamp(),
       })
       clientId = newRef.id
+    } else if (clientId && clientId !== 'new') {
+      const existingClient = clients.find(c => c.id === clientId)
+      const updates = {}
+      if (bdc.clientTel && !existingClient?.contact?.tel) updates['contact.tel'] = bdc.clientTel
+      if (bdc.clientEmail && !existingClient?.contact?.email) updates['contact.email'] = bdc.clientEmail
+      if (bdc.clientSiret && !existingClient?.siret) updates.siret = bdc.clientSiret
+      if (Object.keys(updates).length > 0) {
+        await updateDoc(doc(db, 'clients', clientId), updates)
+      }
     }
     setSaving(true)
     try {
