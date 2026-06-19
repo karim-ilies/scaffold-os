@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react'
-import { DndContext, DragOverlay, useDraggable, useDroppable, PointerSensor, TouchSensor, useSensor, useSensors, pointerWithin } from '@dnd-kit/core'
+import { DndContext, useDraggable, useDroppable, PointerSensor, TouchSensor, useSensor, useSensors, pointerWithin } from '@dnd-kit/core'
 import { usePersonnel }  from '../../hooks/usePersonnel'
 import { useChantiers }  from '../../hooks/useChantiers'
 import { usePlanning }   from '../../hooks/usePlanning'
@@ -35,16 +35,17 @@ const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 // ─── Draggable components ────────────────────────────────────────────────────
 
 function DraggableWorkerChip({ id, entry, ouvrier, onRetirer, saving }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id })
+  const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({ id })
+  const dragStyle = transform ? { transform: `translate(${transform.x}px, ${transform.y}px)`, zIndex: 9999 } : {}
   return (
     <div ref={setNodeRef} {...listeners} {...attributes}
       onClick={(e) => { e.stopPropagation(); !saving && onRetirer(entry) }}
       title={`${entry.ouvrierNom} — glisser ou cliquer pour retirer`}
       style={{
-        background: 'rgba(255,255,255,0.25)', borderRadius: 6, padding: '3px 8px',
+        background: isDragging ? '#0d3580' : 'rgba(255,255,255,0.25)', borderRadius: 6, padding: '3px 8px',
         fontSize: 10, fontWeight: '600', color: '#fff', cursor: 'grab',
         display: 'flex', alignItems: 'center', gap: 3, whiteSpace: 'nowrap',
-        opacity: isDragging ? 0.3 : 1, touchAction: 'none',
+        touchAction: 'none', position: 'relative', ...dragStyle,
       }}
     >
       {ouvrier ? `${ouvrier.prenom} ${ouvrier.nom?.[0]}.` : '?'}
@@ -53,10 +54,11 @@ function DraggableWorkerChip({ id, entry, ouvrier, onRetirer, saving }) {
 }
 
 function DraggableCard({ id, children }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id })
+  const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({ id })
+  const dragStyle = transform ? { transform: `translate(${transform.x}px, ${transform.y}px)`, zIndex: 9999 } : {}
   return (
     <div ref={setNodeRef} {...listeners} {...attributes}
-      style={{ opacity: isDragging ? 0.4 : 1, touchAction: 'none' }}
+      style={{ opacity: isDragging ? 0.5 : 1, touchAction: 'none', position: 'relative', ...dragStyle }}
     >
       {children}
     </div>
@@ -64,7 +66,8 @@ function DraggableCard({ id, children }) {
 }
 
 function DraggableDispoAvatar({ id, ouvrier, isSelected, onClick }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id })
+  const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({ id })
+  const dragStyle = transform ? { transform: `translate(${transform.x}px, ${transform.y}px)`, zIndex: 9999 } : {}
   return (
     <div ref={setNodeRef} {...listeners} {...attributes}
       onClick={onClick}
@@ -72,11 +75,10 @@ function DraggableDispoAvatar({ id, ouvrier, isSelected, onClick }) {
       style={{
         width: 28, height: 28, borderRadius: '50%', fontSize: 9, fontWeight: '700',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: isSelected ? '#E8A838' : ouvrier.role === 'chef_equipe' ? '#0d3580' : '#e8edf8',
-        color: isSelected || ouvrier.role === 'chef_equipe' ? '#fff' : '#0d3580',
-        cursor: 'grab', transition: 'transform 0.1s', touchAction: 'none',
-        transform: isSelected ? 'scale(1.15)' : 'none',
-        opacity: isDragging ? 0.3 : 1,
+        background: isDragging ? '#E8A838' : isSelected ? '#E8A838' : ouvrier.role === 'chef_equipe' ? '#0d3580' : '#e8edf8',
+        color: isDragging || isSelected || ouvrier.role === 'chef_equipe' ? '#fff' : '#0d3580',
+        cursor: 'grab', touchAction: 'none', position: 'relative',
+        ...dragStyle,
       }}
     >
       {ouvrier.prenom?.[0]}{ouvrier.nom?.[0]}
@@ -325,41 +327,6 @@ export default function PlanningPage() {
 
   // ─── Drag overlay ─────────────────────────────────────────────────────────
 
-  function renderOverlay() {
-    if (!activeDrag) return null
-    if (activeDrag.startsWith('card:')) {
-      const [, chantierId] = activeDrag.split(':')
-      const ch = enCours.find(c => c.id === chantierId)
-      return (
-        <div style={{ background: couleurChantier(chantierId), borderRadius: 10, padding: '8px 12px', boxShadow: '0 8px 24px rgba(0,0,0,0.25)', minWidth: 100 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <ConstructionIcon style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }} />
-            <span style={{ fontSize: 11, fontWeight: '700', color: '#fff' }}>{ch?.nom || '?'}</span>
-          </div>
-        </div>
-      )
-    }
-    if (activeDrag.startsWith('worker:')) {
-      const uid = activeDrag.split(':')[2]
-      const o = getOuvrierInfo(uid)
-      return (
-        <div style={{ background: '#0d3580', borderRadius: 8, padding: '4px 10px', boxShadow: '0 6px 20px rgba(0,0,0,0.25)', fontSize: 11, fontWeight: '600', color: '#fff', whiteSpace: 'nowrap' }}>
-          {o ? `${o.prenom} ${o.nom?.[0]}.` : '?'}
-        </div>
-      )
-    }
-    if (activeDrag.startsWith('dispo:')) {
-      const uid = activeDrag.split(':')[1]
-      const o = getOuvrierInfo(uid)
-      return (
-        <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#E8A838', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: '700', color: '#fff', boxShadow: '0 6px 20px rgba(0,0,0,0.25)' }}>
-          {o?.prenom?.[0]}{o?.nom?.[0]}
-        </div>
-      )
-    }
-    return null
-  }
-
   const prevWeek = () => { const d = new Date(weekStart); d.setDate(d.getDate() - 7); setWeekStart(d) }
   const nextWeek = () => { const d = new Date(weekStart); d.setDate(d.getDate() + 7); setWeekStart(d) }
 
@@ -492,9 +459,6 @@ export default function PlanningPage() {
           ))}
         </div>
 
-        <DragOverlay dropAnimation={{ duration: 200, easing: 'ease' }}>
-          {renderOverlay()}
-        </DragOverlay>
       </DndContext>
 
       {/* Résumé semaine */}
