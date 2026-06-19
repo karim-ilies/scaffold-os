@@ -107,6 +107,8 @@ export default function BonsCommandePage() {
         type: 'pro',
         adresse: { rue: bdc.clientAdresse || '', cp: '', ville: '' },
         contact: { nom: '', tel: bdc.clientTel || '', email: bdc.clientEmail || '' },
+        telephone: bdc.clientTel || '',
+        email: bdc.clientEmail || '',
         siret: bdc.clientSiret || '',
         actif: true,
         createdAt: serverTimestamp(),
@@ -115,8 +117,8 @@ export default function BonsCommandePage() {
     } else if (clientId && clientId !== 'new') {
       const existingClient = clients.find(c => c.id === clientId)
       const updates = {}
-      if (bdc.clientTel && !existingClient?.contact?.tel) updates['contact.tel'] = bdc.clientTel
-      if (bdc.clientEmail && !existingClient?.contact?.email) updates['contact.email'] = bdc.clientEmail
+      if (bdc.clientTel && !existingClient?.telephone) { updates.telephone = bdc.clientTel; updates['contact.tel'] = bdc.clientTel }
+      if (bdc.clientEmail && !existingClient?.email) { updates.email = bdc.clientEmail; updates['contact.email'] = bdc.clientEmail }
       if (bdc.clientSiret && !existingClient?.siret) updates.siret = bdc.clientSiret
       if (Object.keys(updates).length > 0) {
         await updateDoc(doc(db, 'clients', clientId), updates)
