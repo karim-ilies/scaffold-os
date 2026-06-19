@@ -19,6 +19,8 @@ import ArchiveIcon         from '@mui/icons-material/Archive'
 import CheckCircleIcon     from '@mui/icons-material/CheckCircle'
 import PaymentsIcon        from '@mui/icons-material/Payments'
 import SendIcon            from '@mui/icons-material/Send'
+import EditIcon            from '@mui/icons-material/Edit'
+import SaveIcon            from '@mui/icons-material/Save'
 
 export default function FactureDetail() {
   const { id }     = useParams()
@@ -36,6 +38,8 @@ export default function FactureDetail() {
   const [paiementModal, setPaiementModal] = useState(false)
   const [sending,       setSending]       = useState(false)
   const [emailModal,    setEmailModal]    = useState(null) // { to, subject, body, pdfUrl }
+  const [editing,       setEditing]       = useState(false)
+  const [editLignes,    setEditLignes]    = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -189,6 +193,19 @@ export default function FactureDetail() {
           />
           <ActionBtn icon={<PictureAsPdfIcon style={{ fontSize: 16 }} />} label="PDF" color="rgba(255,255,255,0.85)" onClick={handleTelechargerPDF} />
           <ActionBtn icon={<PrintIcon style={{ fontSize: 16 }} />} label="Imprimer" color="rgba(255,255,255,0.85)" onClick={handleImprimer} />
+          {facture.statut === 'brouillon' && !editing && (
+            <ActionBtn icon={<EditIcon style={{ fontSize: 16 }} />} label="Modifier" color="#60a5fa" onClick={() => { setEditing(true); setEditLignes(JSON.parse(JSON.stringify(facture.lignes || []))) }} />
+          )}
+          {editing && (
+            <ActionBtn icon={<SaveIcon style={{ fontSize: 16 }} />} label="Sauvegarder" color="#16a34a" onClick={async () => {
+              const totalHT = editLignes.reduce((s, l) => s + (l.montantHT || 0), 0)
+              const totalTVA = editLignes.reduce((s, l) => s + (l.montantTVA || 0), 0)
+              await updateDoc(doc(db, 'factures', id), { lignes: editLignes, totalHT, totalTVA, totalTTC: totalHT + totalTVA })
+              setFacture(f => ({ ...f, lignes: editLignes, totalHT, totalTVA, totalTTC: totalHT + totalTVA }))
+              setEditing(false)
+              await showModal({ type: 'info', title: 'Facture modifiée', message: 'Les modifications ont été enregistrées.' })
+            }} />
+          )}
           {peutArchiver && (
             <ActionBtn icon={<ArchiveIcon style={{ fontSize: 16 }} />} label="Archiver" color="#fca5a5" onClick={handleArchiver} />
           )}
@@ -230,8 +247,32 @@ export default function FactureDetail() {
         </Card>
 
         {/* Lignes */}
-        <Card titre={`Lignes de facturation (${facture.lignes?.length || 0})`} style={{ marginBottom: 12 }}>
-          {isMobile ? (
+        <Card titre={`Lignes de facturation (${facture.lignes?.length || 0})${editing ? ' — Mode édition' : ''}`} style={{ marginBottom: 12 }}>
+          {editing && editLignes ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {editLignes.map((l, i) => (
+                <div key={l.id || i} style={{ background: '#f7f9ff', borderRadius: 10, padding: '12px 14px', border: '1.5px solid #e2e4ea' }}>
+                  <label style={{ fontSize: 10, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Description</label>
+                  <input value={l.description || ''} onChange={e => { const n = [...editLignes]; n[i] = { ...n[i], description: e.target.value }; setEditLignes(n) }}
+                    style={{ width: '100%', boxSizing: 'border-box', background: '#fff', border: '1.5px solid #e2e4ea', borderRadius: 8, padding: '8px 12px', fontSize: 14, marginBottom: 8, outline: 'none' }} />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div>
+                      <label style={{ fontSize: 10, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Montant HT (€)</label>
+                      <input type="number" step="0.01" value={l.montantHT || 0} onChange={e => {
+                        const ht = parseFloat(e.target.value) || 0
+                        const tva = Math.round(ht * (l.tauxTVA || 0.20) * 100) / 100
+                        const n = [...editLignes]; n[i] = { ...n[i], montantHT: ht, montantTVA: tva, montantTTC: ht + tva }; setEditLignes(n)
+                      }} style={{ width: '100%', boxSizing: 'border-box', background: '#fff', border: '1.5px solid #e2e4ea', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 10, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>TTC</label>
+                      <p style={{ fontSize: 16, fontWeight: 700, color: '#0d3580', margin: '8px 0 0' }}>{formatEuro((l.montantHT || 0) + (l.montantTVA || 0))}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : isMobile ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {(facture.lignes || []).map((l, i) => (
                 <div key={l.id || i} style={{ background: '#F7F8FA', borderRadius: 8, padding: '10px 12px' }}>
