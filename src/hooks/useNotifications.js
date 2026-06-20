@@ -202,9 +202,31 @@ export function useNotifications() {
       () => updateSource('ticket_attente', [])
     )
 
+    // Demandes matériel en attente
+    const unsubDemandes = onSnapshot(
+      query(collection(db, 'demandes_materiel'), where('statut', '==', 'nouvelle')),
+      snap => {
+        const notifs = snap.docs.map(d => {
+          const dm = d.data()
+          const articles = (dm.articles || []).map(a => a.nom || a.article).filter(Boolean).join(', ')
+          return {
+            id:       `demande_mat_${d.id}`,
+            type:     'demande_materiel',
+            titre:    'Matériel manquant',
+            message:  `${dm.creeParNom || '—'} · ${articles || 'demande'}`,
+            lien:     `/chantiers/${dm.chantierId}?tab=materiel`,
+            priority: 2,
+            _ts:      dm.createdAt?.toDate ? dm.createdAt.toDate().getTime() : Date.now(),
+          }
+        })
+        updateSource('demande_materiel', notifs)
+      },
+      () => updateSource('demande_materiel', [])
+    )
+
     return () => {
       unsubUsers(); unsubFactures(); unsubStock()
-      unsubPointages(); unsubDevis(); unsubTickets()
+      unsubPointages(); unsubDevis(); unsubTickets(); unsubDemandes()
     }
   }, [isPatron])
 
