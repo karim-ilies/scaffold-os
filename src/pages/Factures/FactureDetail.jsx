@@ -156,7 +156,8 @@ export default function FactureDetail() {
   const archivee   = facture.statut === 'archivee'
   const payee      = facture.statut === 'payee'
   const brouillon  = facture.statut === 'brouillon'
-  const peutPayer  = !payee && !archivee && !brouillon && (facture.solde || 0) > 0
+  const soldeRestant = facture.solde != null ? facture.solde : (facture.totalTTC || 0) - (facture.totalPaye || 0)
+  const peutPayer  = !payee && !archivee && !brouillon && soldeRestant > 0
   const peutArchiver = !archivee
 
   return (

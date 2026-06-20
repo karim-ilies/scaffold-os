@@ -48,15 +48,16 @@ export default function ComptabilitePage() {
     return d.getFullYear() === annee && trimestre.mois.includes(mois)
   }), [factures, annee, trimestre])
 
-  const tva20   = useMemo(() => facturesTrimestre.filter(f => f.regimeTVA === 'normal'), [facturesTrimestre])
+  const tva20   = useMemo(() => facturesTrimestre.filter(f => !f.regimeTVA || f.regimeTVA === 'normal'), [facturesTrimestre])
   const tva10   = useMemo(() => facturesTrimestre.filter(f => f.regimeTVA === 'reduit'), [facturesTrimestre])
   const tva0    = useMemo(() => facturesTrimestre.filter(f => f.regimeTVA === 'autoliquidation'), [facturesTrimestre])
 
-  const ca20 = tva20.reduce((s, f) => s + (f.totalHT  || 0), 0)
+  const getHT = f => f.totalHT || (f.totalTTC || 0) - (f.totalTVA || 0) || 0
+  const ca20 = tva20.reduce((s, f) => s + getHT(f), 0)
   const tv20 = tva20.reduce((s, f) => s + (f.totalTVA || 0), 0)
-  const ca10 = tva10.reduce((s, f) => s + (f.totalHT  || 0), 0)
+  const ca10 = tva10.reduce((s, f) => s + getHT(f), 0)
   const tv10 = tva10.reduce((s, f) => s + (f.totalTVA || 0), 0)
-  const ca0  = tva0.reduce( (s, f) => s + (f.totalHT  || 0), 0)
+  const ca0  = tva0.reduce( (s, f) => s + getHT(f), 0)
   const totalTVA = tv20 + tv10
 
   const impayees = useMemo(() => factures.filter(f => estEnRetard(f) && f.solde > 0), [factures])
