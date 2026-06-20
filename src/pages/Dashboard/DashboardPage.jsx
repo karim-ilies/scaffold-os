@@ -461,16 +461,32 @@ function TerrainLiveWidget({ chantiers, style }) {
       if (!planParChantier[p.chantierId]) planParChantier[p.chantierId] = new Set()
       planParChantier[p.chantierId].add(p.ouvrierUid)
     })
-    const pointeUids = new Set(pointages.map(p => p.ouvrierId))
+
+    // Ajouter les chantiers des pointages même sans planning
+    pointages.forEach(p => {
+      if (p.chantierId && !planParChantier[p.chantierId]) {
+        planParChantier[p.chantierId] = new Set()
+      }
+    })
+
+    const pointeParChantier = {}
+    pointages.forEach(p => {
+      if (!pointeParChantier[p.chantierId]) pointeParChantier[p.chantierId] = new Set()
+      pointeParChantier[p.chantierId].add(p.ouvrierId)
+    })
 
     const result = []
     Object.entries(planParChantier).forEach(([chantierId, prevusSet]) => {
       const prevus = [...prevusSet]
-      const arrives = prevus.filter(uid => pointeUids.has(uid))
-      const manquants = prevus.filter(uid => !pointeUids.has(uid))
-      result.push({ chantierId, prevus, arrives, manquants, total: prevus.length, nbArrives: arrives.length })
+      const pointesSurChantier = [...(pointeParChantier[chantierId] || [])]
+      const arrives = prevus.length > 0
+        ? prevus.filter(uid => pointesSurChantier.includes(uid))
+        : pointesSurChantier
+      const manquants = prevus.filter(uid => !pointesSurChantier.includes(uid))
+      const total = prevus.length > 0 ? prevus.length : pointesSurChantier.length
+      result.push({ chantierId, prevus, arrives, manquants, total, nbArrives: arrives.length })
     })
-    return result.sort((a, b) => (a.nbArrives / a.total) - (b.nbArrives / b.total))
+    return result.sort((a, b) => (b.nbArrives / (b.total || 1)) - (a.nbArrives / (a.total || 1)))
   }, [planning, pointages])
 
   const totalPrevus  = presenceData.reduce((s, d) => s + d.total, 0)
