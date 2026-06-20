@@ -111,7 +111,8 @@ export default function DashboardPage() {
   const caMoisPrec = useMemo(() => facturesMoisPrec.reduce((s, f) => s + (f.totalHT || 0), 0), [facturesMoisPrec])
   const evol       = caMoisPrec > 0 ? Math.round(((caMois - caMoisPrec) / caMoisPrec) * 100) : null
 
-  const impayees    = useMemo(() => factures.filter(f => f.solde > 0 && f.statut !== 'annulee' && f.statut !== 'brouillon'), [factures])
+  const getSolde = f => f.solde != null ? f.solde : (f.totalTTC || 0) - (f.totalPaye || 0)
+  const impayees    = useMemo(() => factures.filter(f => getSolde(f) > 0 && f.statut !== 'annulee' && f.statut !== 'brouillon' && f.statut !== 'payee' && f.statut !== 'paye'), [factures])
   const enRetard    = useMemo(() => factures.filter(estEnRetard), [factures])
   const alertesStock = useMemo(() => stock.filter(s => s.quantiteDisponible < s.quantiteMin), [stock])
 
@@ -192,7 +193,7 @@ export default function DashboardPage() {
           {afficherFactures && (
             <KPI
               label="Factures impayées"
-              value={<AnimatedAmount value={impayees.reduce((s, f) => s + (f.solde || 0), 0)} />}
+              value={<AnimatedAmount value={impayees.reduce((s, f) => s + getSolde(f), 0)} />}
               sub={`${impayees.length} facture(s)`}
               subColor={impayees.length > 0 ? '#c2410c' : '#6b7280'}
               onClick={() => navigate('/factures')}
@@ -247,7 +248,7 @@ export default function DashboardPage() {
                   <p style={{ fontSize: FS.base, fontWeight: '600', color: '#111111', margin: 0 }}>{f.numero}</p>
                   <p style={{ fontSize: FS.xs, color: '#c2410c', margin: '1px 0 0' }}>{joursDeRetard(f)} jours de retard</p>
                 </div>
-                <p style={{ fontSize: FS.md, fontWeight: '600', color: '#c2410c', margin: 0 }}>{formatEuro(f.solde)}</p>
+                <p style={{ fontSize: FS.md, fontWeight: '600', color: '#c2410c', margin: 0 }}>{formatEuro(getSolde(f))}</p>
               </div>
             ))}
           </Section>
