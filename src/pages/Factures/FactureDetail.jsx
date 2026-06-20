@@ -94,14 +94,15 @@ export default function FactureDetail() {
 
   const [emailPrompt, setEmailPrompt] = useState(null)
 
-  async function handleEnvoyer() {
-    if (!client?.email && !client?.contact?.email) {
+  async function handleEnvoyer(emailOverride) {
+    if (!emailOverride && !client?.email && !client?.contact?.email) {
       setEmailPrompt({ clientId: client?.id || facture.clientId, clientNom: client?.nom || facture.clientNom || '—' })
       return
     }
+    const clientPourEnvoi = emailOverride ? { ...client, email: emailOverride } : client
     setSending(true)
     try {
-      const blob   = await generateFacturePDF(facture, client, chantier || {}, parametres || {})
+      const blob   = await generateFacturePDF(facture, clientPourEnvoi, chantier || {}, parametres || {})
       let   pdfUrl = facture.pdfUrl || null
 
       if (STORAGE_ENABLED) {
@@ -112,10 +113,10 @@ export default function FactureDetail() {
 
       if (EMAILJS_FACTURE_CONFIGURE) {
         await envoyerEmailFacture({
-          facture, client, pdfUrl,
+          facture, client: clientPourEnvoi, pdfUrl,
           societeNom: parametres?.raisonSociale || 'Scaffold-OS',
         })
-        await showModal({ type: 'info', title: 'Email envoyé !', message: `Facture ${facture.numero} envoyée à ${client.email}.` })
+        await showModal({ type: 'info', title: 'Email envoyé !', message: `Facture ${facture.numero} envoyée à ${clientPourEnvoi.email}.` })
       } else {
         const societe = parametres?.raisonSociale || 'Votre prestataire'
         const sujet   = `Facture ${facture.numero} — ${societe}`
@@ -345,7 +346,7 @@ export default function FactureDetail() {
             }
             setClient(prev => prev ? { ...prev, email, contact: { ...prev.contact, email } } : prev)
             setEmailPrompt(null)
-            setTimeout(() => handleEnvoyer(), 300)
+            handleEnvoyer(email)
           }}
         />
       )}
