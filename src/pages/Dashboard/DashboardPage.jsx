@@ -556,26 +556,39 @@ function TerrainLiveWidget({ chantiers, style }) {
 
             {isOpen && (
               <div style={{ paddingBottom: 8, paddingLeft: 32 }}>
-                {d.prevus.map((uid, i) => {
-                  const arrive = d.arrives.includes(uid)
-                  const ptg = pointages.find(p => p.ouvrierId === uid)
-                  return (
-                    <div key={uid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < d.prevus.length - 1 ? '1px solid #f9fafb' : 'none' }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: arrive ? '#16a34a' : '#dc2626', flexShrink: 0 }} />
-                      <p style={{ fontSize: FS.sm, fontWeight: '500', color: arrive ? '#374151' : '#dc2626', margin: 0, flex: 1 }}>
-                        {nomOuvrier(uid)}
-                      </p>
-                      {arrive && ptg?.heureDebut && (
-                        <span style={{ fontSize: FS.xs, color: '#6b7280', background: '#f3f4f6', padding: '1px 7px', borderRadius: 20 }}>
-                          depuis {ptg.heureDebut}
-                        </span>
-                      )}
-                      {!arrive && (
-                        <span style={{ fontSize: FS.xs, color: '#dc2626', fontWeight: 600 }}>Absent</span>
-                      )}
-                    </div>
-                  )
-                })}
+                {(() => {
+                  const tousUids = [...new Set([...d.prevus, ...d.arrives])]
+                  return tousUids.map((uid, i) => {
+                    const arrive = d.arrives.includes(uid)
+                    const ptg = pointages.find(p => p.ouvrierId === uid && p.chantierId === d.chantierId)
+                    const lastGPS = ptg?.tracesGPS?.[ptg.tracesGPS.length - 1]
+                    const gpsUrl = lastGPS?.lat && lastGPS?.lng ? `https://www.google.com/maps?q=${lastGPS.lat},${lastGPS.lng}` : null
+                    return (
+                      <div key={uid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < tousUids.length - 1 ? '1px solid #f9fafb' : 'none' }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: arrive ? '#16a34a' : '#dc2626', flexShrink: 0 }} />
+                        <p style={{ fontSize: FS.sm, fontWeight: '500', color: arrive ? '#374151' : '#dc2626', margin: 0, flex: 1 }}>
+                          {nomOuvrier(uid)}
+                        </p>
+                        {arrive && ptg?.heureDebut && (
+                          <span style={{ fontSize: FS.xs, color: '#6b7280', background: '#f3f4f6', padding: '1px 7px', borderRadius: 20 }}>
+                            depuis {ptg.heureDebut}
+                          </span>
+                        )}
+                        {arrive && gpsUrl && (
+                          <a href={gpsUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', background: '#e8edf8', flexShrink: 0 }}
+                            title="Voir la position GPS"
+                          >
+                            <LocationOnIcon style={{ fontSize: 14, color: '#0d3580' }} />
+                          </a>
+                        )}
+                        {!arrive && (
+                          <span style={{ fontSize: FS.xs, color: '#dc2626', fontWeight: 600 }}>Absent</span>
+                        )}
+                      </div>
+                    )
+                  })
+                })()}
               </div>
             )}
           </div>
