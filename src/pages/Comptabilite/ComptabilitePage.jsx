@@ -124,8 +124,8 @@ export default function ComptabilitePage() {
           </div>
         </div>
 
-        {onglet === 'tva' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+        {onglet === 'tva' && (<>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
             <button onClick={() => setTvaEncaissements(false)}
               style={{ padding: '8px 14px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                 background: !tvaEncaissements ? '#0d3580' : '#f0f2f7', color: !tvaEncaissements ? '#fff' : '#6b7280' }}
@@ -178,7 +178,7 @@ export default function ComptabilitePage() {
               </div>
             </div>
           </div>
-        )}
+        </>)}
 
         {onglet === 'fec' && (
           <div style={{ maxWidth: 560 }}>
