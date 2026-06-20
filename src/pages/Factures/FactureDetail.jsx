@@ -399,6 +399,12 @@ export default function FactureDetail() {
               style={{ padding: '10px 14px', background: '#f0f2f7', color: '#374151', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
               PDF
             </button>
+            {peutArchiver && (
+              <button onClick={handleArchiver}
+                style={{ padding: '10px 14px', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                Archiver
+              </button>
+            )}
           </>
         )}
       </div>
