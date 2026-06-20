@@ -112,7 +112,7 @@ export default function DashboardPage() {
   const evol       = caMoisPrec > 0 ? Math.round(((caMois - caMoisPrec) / caMoisPrec) * 100) : null
 
   const getSolde = f => f.solde != null ? f.solde : (f.totalTTC || 0) - (f.totalPaye || 0)
-  const impayees    = useMemo(() => factures.filter(f => getSolde(f) > 0 && f.statut !== 'annulee' && f.statut !== 'brouillon' && f.statut !== 'payee' && f.statut !== 'paye'), [factures])
+  const impayees    = useMemo(() => factures.filter(f => getSolde(f) > 0 && f.statut !== 'annulee' && f.statut !== 'brouillon' && f.statut !== 'payee' && f.statut !== 'paye' && f.statut !== 'archivee'), [factures])
   const enRetard    = useMemo(() => factures.filter(estEnRetard), [factures])
   const alertesStock = useMemo(() => stock.filter(s => s.quantiteDisponible < s.quantiteMin), [stock])
 
