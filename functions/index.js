@@ -157,12 +157,16 @@ ATTENTION — il y a 3 entites dans ce document :
 Extrais TOUTES les informations et retourne UNIQUEMENT un JSON valide (sans markdown) :
 {
   "clientNom": "nom de l'entreprise qui ENVOIE le BDC (logo, en-tete, pied de page)",
-  "clientAdresse": "adresse du SIEGE du client (PAS l'adresse du chantier)",
+  "clientRue": "numero et rue du SIEGE du client (PAS l'adresse du chantier)",
+  "clientCP": "code postal du client (5 chiffres)",
+  "clientVille": "ville du client",
   "clientEmail": "email du client (en-tete ou pied de page)",
   "clientTel": "telephone du client",
   "clientSiret": "SIRET ou TVA intra du client",
   "chantierNom": "nom ou reference du chantier (section Chantier)",
-  "chantierAdresse": "adresse du CHANTIER (lieu des travaux)",
+  "chantierRue": "numero et rue du CHANTIER (lieu des travaux)",
+  "chantierCP": "code postal du chantier",
+  "chantierVille": "ville du chantier",
   "dateIntervention": "YYYY-MM-DD",
   "dateFin": "YYYY-MM-DD (si periode, sinon null)",
   "nbJours": nombre de jours prevus (1 si non precise),

@@ -97,7 +97,7 @@ export default function BonsCommandePage() {
       if (cId === 'new' && d.clientNom) {
         const newRef = await addDoc(collection(db, 'clients'), {
           nom: d.clientNom, type: 'pro',
-          adresse: { rue: d.clientAdresse || '', cp: '', ville: '' },
+          adresse: { rue: d.clientRue || d.clientAdresse || '', cp: d.clientCP || '', ville: d.clientVille || '' },
           contact: { nom: '', tel: d.clientTel || '', email: d.clientEmail || '' },
           telephone: d.clientTel || '', email: d.clientEmail || '',
           siret: d.clientSiret || '', actif: true, createdAt: serverTimestamp(),
@@ -119,7 +119,7 @@ export default function BonsCommandePage() {
       const chantierRef = await addDoc(collection(db, 'chantiers'), {
         nom: d.chantierNom || d.description || '—',
         clientId: cId || null,
-        adresse: { rue: d.chantierAdresse || '', cp: '', ville: '' },
+        adresse: { rue: d.chantierRue || d.chantierAdresse || '', cp: d.chantierCP || '', ville: d.chantierVille || '' },
         statut: 'en_cours', dateDebut,
         montantBDC: d.montantHT, avancement: 0,
         typeChantier: 'montage_echafaudage',
@@ -233,7 +233,7 @@ export default function BonsCommandePage() {
                   <span style={{ fontSize: 15, fontWeight: 700, color: '#16a34a' }}>BDC lu par l'IA</span>
                   {extractedData.pdfUrl && <a href={extractedData.pdfUrl} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', fontSize: 12, color: '#0d3580', fontWeight: 600 }}>📄 PDF</a>}
                 </div>
-                {[['Chantier', extractedData.chantierNom], ['Adresse chantier', extractedData.chantierAdresse], ['Date', extractedData.dateIntervention], ['Description', extractedData.description],
+                {[['Chantier', extractedData.chantierNom], ['Adresse chantier', [extractedData.chantierRue, extractedData.chantierCP, extractedData.chantierVille].filter(Boolean).join(', ') || extractedData.chantierAdresse], ['Date', extractedData.dateIntervention], ['Description', extractedData.description],
                   ['Montant HT', extractedData.montantHT ? formatEuro(extractedData.montantHT) : null], ['TTC', extractedData.montantTTC ? formatEuro(extractedData.montantTTC) : null],
                 ].map(([l, v]) => (
                   <div key={l} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '0.5px solid #f0f2f7' }}>
