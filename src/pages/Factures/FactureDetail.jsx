@@ -386,7 +386,7 @@ export default function FactureDetail() {
                 ✏️ Modifier
               </button>
             )}
-            <button onClick={handleEnvoyer} disabled={sending}
+            <button onClick={() => handleEnvoyer()} disabled={sending}
               style={{ flex: 1, padding: '10px 16px', background: '#E8A838', color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {sending ? 'Envoi…' : '📩 Envoyer'}
             </button>
