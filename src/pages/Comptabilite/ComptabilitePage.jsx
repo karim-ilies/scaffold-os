@@ -26,6 +26,7 @@ export default function ComptabilitePage() {
   const { parametres } = useParametres()
   const { isMobile } = useResponsive()
   const [onglet, setOnglet]     = useState('tva')
+  const [tvaEncaissements, setTvaEncaissements] = useState(true)
   const [relanceSending, setRelanceSending] = useState({}) // { [factureId]: 'sending' | 'done' | 'error' }
   const [annee, setAnnee]       = useState(new Date().getFullYear())
   const [trimestreK, setTrimestre] = useState(() => {
@@ -42,11 +43,12 @@ export default function ComptabilitePage() {
 
   const facturesTrimestre = useMemo(() => factures.filter(f => {
     if (f.statut === 'annulee' || f.statut === 'brouillon') return false
+    if (tvaEncaissements && f.statut !== 'payee' && f.statut !== 'paye') return false
     const d = f.dateEmission?.toDate ? f.dateEmission.toDate() : f.dateEmission ? new Date(f.dateEmission) : null
     if (!d) return false
     const mois = String(d.getMonth() + 1).padStart(2, '0')
     return d.getFullYear() === annee && trimestre.mois.includes(mois)
-  }), [factures, annee, trimestre])
+  }), [factures, annee, trimestre, tvaEncaissements])
 
   const tva20   = useMemo(() => facturesTrimestre.filter(f => !f.regimeTVA || f.regimeTVA === 'normal'), [facturesTrimestre])
   const tva10   = useMemo(() => facturesTrimestre.filter(f => f.regimeTVA === 'reduit'), [facturesTrimestre])
@@ -123,6 +125,19 @@ export default function ComptabilitePage() {
         </div>
 
         {onglet === 'tva' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <button onClick={() => setTvaEncaissements(false)}
+              style={{ padding: '8px 14px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                background: !tvaEncaissements ? '#0d3580' : '#f0f2f7', color: !tvaEncaissements ? '#fff' : '#6b7280' }}
+            >TVA sur débits</button>
+            <button onClick={() => setTvaEncaissements(true)}
+              style={{ padding: '8px 14px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                background: tvaEncaissements ? '#0d3580' : '#f0f2f7', color: tvaEncaissements ? '#fff' : '#6b7280' }}
+            >TVA sur encaissements</button>
+            <span style={{ fontSize: 11, color: '#6b7280', fontStyle: 'italic' }}>
+              {tvaEncaissements ? 'Seules les factures payées sont comptées' : 'Toutes les factures envoyées sont comptées'}
+            </span>
+          </div>
           <div>
             <div style={{ background: '#FFFFFF', borderRadius: 12, border: '1.5px solid #0d3580', padding: '18px 20px', maxWidth: 600 }}>
               <p style={{ fontSize: 15, fontWeight: '600', color: '#111111', margin: '0 0 16px' }}>
